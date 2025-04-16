@@ -59,142 +59,152 @@ class _TestScreenState extends State<TestScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1a237e),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
+      appBar: AppBar(
+        backgroundColor: Colors.blue.shade800,
+        title: const Text(
+          'Roommate Test',
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+      ),
+      body: Container(
+        color: Colors.blue.shade800,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             children: [
-              // Header with logo
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.person, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text(
-                        'MatchMate',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Dil seçimi
-                  TextButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        isEnglish = !isEnglish;
-                      });
-                    },
-                    icon: Icon(Icons.language, color: Colors.white),
-                    label: Text(
-                      isEnglish ? 'EN' : 'TR',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 40),
-              // İlerleme göstergesi
-              LinearProgressIndicator(
-                value: (currentQuestionIndex + 1) / questions.length,
-                backgroundColor: Colors.white.withOpacity(0.2),
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-              const SizedBox(height: 20),
-              // Soru numarası
-              Text(
-                'Question ${currentQuestionIndex + 1}/${questions.length}',
+
+              // Title
+              const Text(
+                'Find Your\nPerfect Match!',
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 40),
-              // Soru
-              Text(
-                isEnglish
-                    ? questions[currentQuestionIndex]['en']
-                    : questions[currentQuestionIndex]['tr'],
-                style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 24,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
-                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
-              // Cevap butonları
-              ...List.generate(
-                2,
-                (index) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed:
-                          () => _handleAnswer(
-                            isEnglish
-                                ? questions[currentQuestionIndex]['options'][index]
-                                : questions[currentQuestionIndex]['optionsTr'][index],
+
+              const SizedBox(height: 60),
+
+              // Questions
+              ...List.generate(questions.length, (index) {
+                return Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Question ${index + 1}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
                           ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        isEnglish
-                            ? questions[currentQuestionIndex]['options'][index]
-                            : questions[currentQuestionIndex]['optionsTr'][index],
-                        style: TextStyle(
-                          color: Color(0xFF1a237e),
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                          const SizedBox(height: 8),
+                          Text(
+                            isEnglish
+                                ? questions[index]['en']
+                                : questions[index]['tr'],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildAnswerButton(
+                                index: index,
+                                isYes: true,
+                                isSelected: answers[index] == 'Yes',
+                              ),
+                              _buildAnswerButton(
+                                index: index,
+                                isYes: false,
+                                isSelected: answers[index] == 'No',
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
+                    const SizedBox(height: 20),
+                  ],
+                );
+              }),
+
+              const SizedBox(height: 40),
+
+              // Submit button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade600,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    print('Answers: $answers');
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'SUBMIT',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-              const Spacer(),
-              // Submit butonu (son soruda göster)
-              if (currentQuestionIndex == questions.length - 1)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // TODO: Submit answers
-                      print('Answers: $answers');
-                      Navigator.pushReplacementNamed(context, '/home');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      isEnglish ? 'Submit' : 'Gönder',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnswerButton({
+    required int index,
+    required bool isYes,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          answers[index] = isYes ? 'Yes' : 'No';
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          color:
+              isSelected ? Colors.blue.shade600 : Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color:
+                isSelected
+                    ? Colors.blue.shade400
+                    : Colors.white.withOpacity(0.3),
+            width: 2,
+          ),
+        ),
+        child: Text(
+          isYes ? 'Yes' : 'No',
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+            fontSize: 16,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ),
