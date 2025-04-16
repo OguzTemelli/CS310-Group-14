@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'screens/welcome_screen.dart'; // Import the WelcomeScreen
+import 'screens/welcome_screen.dart';
+import 'screens/registration_screen.dart';
+import 'screens/contact_screen.dart';
+import 'screens/feedback_screen.dart';
+import 'screens/login_screen.dart';  // Import new LoginScreen
+import 'screens/home_screen.dart';   // Import new HomeScreen
 
 void main() {
   runApp(const MyApp());
@@ -12,38 +17,37 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'DormMate', // Changed title
+      title: 'DormMate',
       theme: ThemeData(
-        // Use a blue color scheme
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade800),
-        useMaterial3: true, // Recommended for new apps
-         // Define button themes based on wireframe if needed
+        useMaterial3: true,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white, // Text color for ElevatedButton
+            foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8), // Adjust radius as needed
+              borderRadius: BorderRadius.circular(8),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
           ),
         ),
-        // Define Text Field Themes if needed
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
-            borderSide: BorderSide.none, // Hide default border if filled
+            borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: Colors.grey[200], // Example fill color
+          fillColor: Colors.grey[200],
         ),
       ),
-      // Set WelcomeScreen as the home screen
       home: const WelcomeScreen(),
-      // TODO: Define routes for navigation later
-      // routes: {
-      //   '/login': (context) => LoginScreen(),
-      //   '/register': (context) => RegistrationScreen(),
-      // },
+      routes: {
+        '/welcome': (context) => const WelcomeScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegistrationScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/contact': (context) => const ContactScreen(),
+        '/feedback': (context) => const FeedbackScreen(),
+      },
     );
   }
 }
