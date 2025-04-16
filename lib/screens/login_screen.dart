@@ -100,10 +100,11 @@ class LoginScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         // Insert login functionality here.
-                        // On successful login, you might navigate to the Home screen:
-                        // Navigator.pushNamed(context, '/home');
+                        // On successful login, navigate to the Home screen:
+                        Navigator.pushReplacementNamed(context, '/home');
                       },
                       style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepOrange,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -111,7 +112,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                       child: const Text(
                         'Login',
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
                   ),
@@ -132,7 +133,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          // Add navigation to the Sign Up screen here
+                          Navigator.pushNamed(context, '/register');
                         },
                         child: const Text(
                           'Sign Up Now!',

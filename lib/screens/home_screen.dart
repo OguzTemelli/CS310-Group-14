@@ -6,47 +6,150 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.count(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          children: [
-            _buildGridButton("Take The Test", Icons.check),
-            _buildGridButton("Previous Results", Icons.history),
-            _buildGridButton("Dorm Rules", Icons.rule),
-            _buildGridButton("SuDorms", Icons.apartment),
-            _buildGridButton("Contact", Icons.contact_page),
-            _buildGridButton("Feedback", Icons.feedback),
-          ],
+      backgroundColor: const Color(0xFF1a237e), // Koyu mavi arka plan
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              // Profil Kartı
+              Card(
+                color: Colors.white.withOpacity(0.1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Row(
+                    children: [
+                      // Profil Resmi
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.white,
+                        child: CircleAvatar(
+                          radius: 28,
+                          backgroundColor: Colors.grey[200],
+                          child: const Icon(
+                            Icons.person,
+                            size: 35,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      // Kullanıcı Bilgileri
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Welcome User',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'user@sabanciuniv.edu',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.7),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+              // Menü Grid'i
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 20,
+                  children: [
+                    _buildMenuButton(
+                      icon: Icons.quiz,
+                      label: 'Take The\nTest',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/test-confirmation');
+                      },
+                    ),
+                    _buildMenuButton(
+                      icon: Icons.history,
+                      label: 'Previous\nResults',
+                      onTap: () {
+                        // TODO: Implement results navigation
+                      },
+                    ),
+                    _buildMenuButton(
+                      icon: Icons.school,
+                      label: 'Dorm\nRules',
+                      onTap: () {
+                        // TODO: Implement rules navigation
+                      },
+                    ),
+                    _buildMenuButton(
+                      icon: Icons.home,
+                      label: 'SuDorms',
+                      onTap: () {
+                        // TODO: Implement dorms navigation
+                      },
+                    ),
+                    _buildMenuButton(
+                      icon: Icons.contact_phone,
+                      label: 'Contact',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/contact');
+                      },
+                    ),
+                    _buildMenuButton(
+                      icon: Icons.feedback,
+                      label: 'Feedback',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/feedback');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildGridButton(String title, IconData iconData) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-      ),
-      onPressed: () {
-        // Add navigation or logic for each button if needed
-      },
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(iconData, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-          ),
-        ],
+  Widget _buildMenuButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40, color: Colors.white),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

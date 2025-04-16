@@ -3,8 +3,10 @@ import 'screens/welcome_screen.dart';
 import 'screens/registration_screen.dart';
 import 'screens/contact_screen.dart';
 import 'screens/feedback_screen.dart';
-import 'screens/login_screen.dart';  // Import new LoginScreen
-import 'screens/home_screen.dart';   // Import new HomeScreen
+import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/test_confirmation_screen.dart';
+import 'screens/test_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -47,6 +49,8 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/contact': (context) => const ContactScreen(),
         '/feedback': (context) => const FeedbackScreen(),
+        '/test-confirmation': (context) => const TestConfirmationScreen(),
+        '/test': (context) => const TestScreen(),
       },
     );
   }
