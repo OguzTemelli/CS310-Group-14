@@ -104,10 +104,55 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 20),
+              
+              // Contact and Feedback Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade700,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/contact');
+                      },
+                      child: const Text(
+                        'Contact Us',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade500,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/feedback');
+                      },
+                      child: const Text(
+                        'Feedback',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              
               const Spacer(flex: 1),
               // Optional: Add bottom navigation elements (arrows, dots) if needed
               // For now, just adding some bottom padding
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
             ],
           ),
         ),

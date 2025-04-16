@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'screens/welcome_screen.dart'; // Import the WelcomeScreen
+import 'screens/registration_screen.dart'; // Import RegistrationScreen
+import 'screens/contact_screen.dart'; // Import ContactScreen
+import 'screens/feedback_screen.dart'; // Import FeedbackScreen
 
 void main() {
   runApp(const MyApp());
@@ -39,11 +42,13 @@ class MyApp extends StatelessWidget {
       ),
       // Set WelcomeScreen as the home screen
       home: const WelcomeScreen(),
-      // TODO: Define routes for navigation later
-      // routes: {
-      //   '/login': (context) => LoginScreen(),
-      //   '/register': (context) => RegistrationScreen(),
-      // },
+      // Define routes for navigation
+      routes: {
+        '/welcome': (context) => const WelcomeScreen(),
+        '/register': (context) => const RegistrationScreen(),
+        '/contact': (context) => const ContactScreen(),
+        '/feedback': (context) => const FeedbackScreen(),
+      },
     );
   }
 }
