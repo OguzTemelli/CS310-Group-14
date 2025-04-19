@@ -9,6 +9,8 @@ import 'screens/test_confirmation_screen.dart';
 import 'screens/test_screen.dart';
 import 'screens/upgrade_membership_screen.dart';
 import 'screens/payment_success_screen.dart';
+import 'screens/previous_results_screen.dart';
+import 'screens/best_matches_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -56,6 +58,8 @@ class MyApp extends StatelessWidget {
         '/upgrade-membership': (context) => const UpgradeMembershipScreen(),
         '/payment-success':
             (context) => const PaymentSuccessScreen(membershipType: 'Premium'),
+        '/previous-results': (context) => const PreviousResultsScreen(),
+        '/best-matches': (context) => const BestMatchesScreen(),
       },
     );
   }

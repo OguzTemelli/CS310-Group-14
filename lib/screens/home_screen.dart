@@ -145,7 +145,7 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.history,
                       label: 'Previous\nResults',
                       onTap: () {
-                        // TODO: Implement results navigation
+                        Navigator.pushNamed(context, '/previous-results');
                       },
                     ),
                     _buildMenuButton(

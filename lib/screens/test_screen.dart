@@ -11,7 +11,7 @@ class _TestScreenState extends State<TestScreen> {
   bool isEnglish = true; // true for English, false for Turkish
   int currentQuestionIndex = 0;
 
-  // Sorular ve cevaplar
+  // TODO: Bu sorular ileride API'den veya veritabanından çekilecek
   final List<Map<String, dynamic>> questions = [
     {
       'en': 'Do you sleep late?',
@@ -46,6 +46,30 @@ class _TestScreenState extends State<TestScreen> {
   ];
 
   List<String?> answers = List.filled(5, null);
+
+  // TODO: İleride kullanılacak metodlar
+  Future<void> _loadQuestions() async {
+    // API'den veya veritabanından soruları yükleme
+    // setState(() {
+    //   questions = ...
+    // });
+  }
+
+  Future<void> _submitAnswers() async {
+    // Cevapları API'ye gönderme
+    // await api.submitAnswers(answers);
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/best-matches',
+      (route) => false,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // _loadQuestions(); // İleride aktif edilecek
+  }
 
   void _handleAnswer(String answer) {
     setState(() {
@@ -159,7 +183,7 @@ class _TestScreenState extends State<TestScreen> {
                   ),
                   onPressed: () {
                     print('Answers: $answers');
-                    Navigator.pop(context);
+                    _submitAnswers();
                   },
                   child: const Text(
                     'SUBMIT',
