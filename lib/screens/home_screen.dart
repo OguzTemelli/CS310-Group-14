@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1a237e), // Koyu mavi arka plan
+      backgroundColor: const Color(0xFF1a237e),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -64,7 +63,6 @@ class HomeScreen extends StatelessWidget {
                                 color: Colors.white,
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -73,7 +71,6 @@ class HomeScreen extends StatelessWidget {
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.7),
                                 fontSize: 14,
-                                letterSpacing: 0.3,
                               ),
                             ),
                           ],
@@ -101,14 +98,7 @@ class HomeScreen extends StatelessWidget {
                             Navigator.pushNamed(context, '/upgrade-membership');
                           },
                           icon: const Icon(Icons.star, color: Colors.white),
-                          label: const Text(
-                            'Upgrade',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
+                          label: const Text('Upgrade'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
@@ -195,27 +185,29 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushNamedAndRemoveUntil(
                       context,
-                      '/',
+                      '/welcome',
                       (route) => false,
                     );
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.logout,
-                    color: Colors.white,
+                    color: Colors.white.withOpacity(0.9),
+                    size: 20,
                   ),
-                  label: const Text(
+                  label: Text(
                     'Log Out',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.white.withOpacity(0.9),
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 15,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
                 ),
@@ -232,50 +224,28 @@ class HomeScreen extends StatelessWidget {
     required String label,
     required VoidCallback onTap,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.1),
-            Colors.white.withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.1),
-          width: 1,
+          borderRadius: BorderRadius.circular(15),
         ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: 40,
-                  color: Colors.white,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40, color: Colors.white),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

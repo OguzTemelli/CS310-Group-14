@@ -12,29 +12,23 @@ import 'screens/payment_success_screen.dart';
 import 'screens/previous_results_screen.dart';
 import 'screens/best_matches_screen.dart';
 
+// Yeni ekranları import et
+import 'screens/sabanci_dorms_screen.dart';
+import 'screens/dorm_rules_screen.dart';
+
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Fitness App',
-      debugShowCheckedModeBanner: false,
+      title: 'DormMate',
       theme: ThemeData(
-        primaryColor: AppTheme.primaryColor,
-        scaffoldBackgroundColor: AppTheme.backgroundColor,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppTheme.primaryColor,
-          secondary: AppTheme.secondaryColor,
-        ),
-        textTheme: TextTheme(
-          headlineLarge: AppTheme.headingStyle,
-          bodyLarge: AppTheme.subheadingStyle,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade800),
+        useMaterial3: true,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             foregroundColor: Colors.white,
@@ -68,6 +62,9 @@ class MyApp extends StatelessWidget {
             (context) => const PaymentSuccessScreen(membershipType: 'Premium'),
         '/previous-results': (context) => const PreviousResultsScreen(),
         '/best-matches': (context) => const BestMatchesScreen(),
+        // Yeni rotalar
+        '/dorms': (context) => const SabanciDormsScreen(),
+        '/rules': (context) => const DormRulesScreen(),
       },
     );
   }
