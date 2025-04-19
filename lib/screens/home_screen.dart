@@ -152,14 +152,14 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.school,
                       label: 'Dorm\nRules',
                       onTap: () {
-                        // TODO: Implement rules navigation
+                        Navigator.pushNamed(context, '/rules');
                       },
                     ),
                     _buildMenuButton(
                       icon: Icons.home,
                       label: 'SuDorms',
                       onTap: () {
-                        // TODO: Implement dorms navigation
+                        Navigator.pushNamed(context, '/dorms');
                       },
                     ),
                     _buildMenuButton(

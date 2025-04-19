@@ -11,8 +11,6 @@ import 'screens/upgrade_membership_screen.dart';
 import 'screens/payment_success_screen.dart';
 import 'screens/previous_results_screen.dart';
 import 'screens/best_matches_screen.dart';
-import 'screens/membership_features_screen.dart';
-import 'utils/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +19,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -39,12 +36,26 @@ class MyApp extends StatelessWidget {
           bodyLarge: AppTheme.subheadingStyle,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
-          style: AppTheme.elevatedButtonStyle,
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.grey[200],
         ),
       ),
-      initialRoute: '/',
+      home: const WelcomeScreen(),
       routes: {
-        '/': (context) => const WelcomeScreen(),
+        '/welcome': (context) => const WelcomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegistrationScreen(),
         '/home': (context) => const HomeScreen(),
@@ -53,12 +64,10 @@ class MyApp extends StatelessWidget {
         '/test-confirmation': (context) => const TestConfirmationScreen(),
         '/test': (context) => const TestScreen(),
         '/upgrade-membership': (context) => const UpgradeMembershipScreen(),
-        '/payment-success': (context) =>
-            const PaymentSuccessScreen(membershipType: 'Premium'),
+        '/payment-success':
+            (context) => const PaymentSuccessScreen(membershipType: 'Premium'),
         '/previous-results': (context) => const PreviousResultsScreen(),
         '/best-matches': (context) => const BestMatchesScreen(),
-        '/membership': (context) => const MembershipFeaturesScreen(),
-        '/membership-features': (context) => const MembershipFeaturesScreen(),
       },
     );
   }
