@@ -11,6 +11,8 @@ import 'screens/upgrade_membership_screen.dart';
 import 'screens/payment_success_screen.dart';
 import 'screens/previous_results_screen.dart';
 import 'screens/best_matches_screen.dart';
+import 'screens/membership_features_screen.dart';
+import 'utils/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,31 +25,26 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'DormMate',
+      title: 'Fitness App',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade800),
-        useMaterial3: true,
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-          ),
+        primaryColor: AppTheme.primaryColor,
+        scaffoldBackgroundColor: AppTheme.backgroundColor,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppTheme.primaryColor,
+          secondary: AppTheme.secondaryColor,
         ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: Colors.grey[200],
+        textTheme: TextTheme(
+          headlineLarge: AppTheme.headingStyle,
+          bodyLarge: AppTheme.subheadingStyle,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: AppTheme.elevatedButtonStyle,
         ),
       ),
-      home: const WelcomeScreen(),
+      initialRoute: '/',
       routes: {
-        '/welcome': (context) => const WelcomeScreen(),
+        '/': (context) => const WelcomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegistrationScreen(),
         '/home': (context) => const HomeScreen(),
@@ -56,10 +53,12 @@ class MyApp extends StatelessWidget {
         '/test-confirmation': (context) => const TestConfirmationScreen(),
         '/test': (context) => const TestScreen(),
         '/upgrade-membership': (context) => const UpgradeMembershipScreen(),
-        '/payment-success':
-            (context) => const PaymentSuccessScreen(membershipType: 'Premium'),
+        '/payment-success': (context) =>
+            const PaymentSuccessScreen(membershipType: 'Premium'),
         '/previous-results': (context) => const PreviousResultsScreen(),
         '/best-matches': (context) => const BestMatchesScreen(),
+        '/membership': (context) => const MembershipFeaturesScreen(),
+        '/membership-features': (context) => const MembershipFeaturesScreen(),
       },
     );
   }

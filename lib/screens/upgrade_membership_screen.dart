@@ -19,142 +19,135 @@ class UpgradeMembershipScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              const Text(
-                'Choose Your Plan',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Choose How to Upgrade',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 30),
-              _buildMembershipCard(
-                title: 'Premium',
-                price: '\$9.99',
-                features: [
-                  'Advanced matching algorithm',
-                  'Priority support',
-                  'Unlimited test attempts',
-                  'Detailed compatibility reports',
-                ],
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/payment-success',
-                    arguments: 'Premium',
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              _buildMembershipCard(
-                title: 'Pro',
-                price: '\$19.99',
-                features: [
-                  'All Premium features',
-                  'Personalized matching',
-                  '24/7 support',
-                  'Early access to new features',
-                  'Custom profile themes',
-                ],
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/payment-success',
-                    arguments: 'Pro',
-                  );
-                },
-              ),
-              const SizedBox(height: 20), // Add bottom padding
-            ],
-          ),
+            ),
+            const SizedBox(height: 30),
+            _buildOptionCard(
+              context,
+              title: 'Customize Your Plan',
+              description: 'Select individual features and build your own plan',
+              icon: Icons.add_circle_outline,
+              onTap: () {
+                Navigator.pushNamed(context, '/membership-features');
+              },
+            ),
+            const SizedBox(height: 20),
+            _buildOptionCard(
+              context,
+              title: 'Premium Package',
+              description:
+                  'Get our most popular features at a discounted price',
+              icon: Icons.star_border,
+              price: '\$9.99',
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  '/payment-success',
+                  arguments: 'Premium',
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            _buildOptionCard(
+              context,
+              title: 'Pro Package',
+              description: 'All features included with priority support',
+              icon: Icons.workspace_premium,
+              price: '\$19.99',
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  '/payment-success',
+                  arguments: 'Pro',
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildMembershipCard({
+  Widget _buildOptionCard(
+    BuildContext context, {
     required String title,
-    required String price,
-    required List<String> features,
+    required String description,
+    required IconData icon,
+    String? price,
     required VoidCallback onTap,
   }) {
     return Card(
       color: Colors.white.withOpacity(0.1),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side: BorderSide(
+          color: Colors.white.withOpacity(0.1),
+        ),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(15),
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                  Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (price != null)
+                          Text(
+                            price,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                  Text(
-                    price,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white,
+                    size: 20,
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              ...features.map(
-                (feature) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          feature,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Center(
-                child: ElevatedButton(
-                  onPressed: onTap,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
-                    ),
-                  ),
-                  child: const Text(
-                    'Upgrade Now',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+              const SizedBox(height: 10),
+              Text(
+                description,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 14,
                 ),
               ),
             ],
