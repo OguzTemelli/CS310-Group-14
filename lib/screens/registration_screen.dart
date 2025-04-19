@@ -283,22 +283,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                   ),
                   onPressed: () {
-                    // TODO: Implement Sign Up Logic
-                    if (_formKey.currentState!.validate()) {
-                      if (!_agreeToTerms) {
-                        // Show error if terms not agreed
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Please agree to the Terms and Conditions',
-                            ),
+                    final isValid = _formKey.currentState!.validate();
+                    if (!isValid || !_agreeToTerms) {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Invalid Submission'),
+                          content: const Text(
+                            'Please fix the errors and agree to the terms before submitting.',
                           ),
-                        );
-                        return;
-                      }
-                      // Navigate to login screen after successful registration
-                      Navigator.pushReplacementNamed(context, '/login');
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx).pop(),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                      return;
                     }
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
                   child: const Text(
                     'SIGN UP',

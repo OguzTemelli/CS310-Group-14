@@ -14,7 +14,7 @@ class _SabanciDormsScreenState extends State<SabanciDormsScreen> {
   // Tüm fotoğrafları ve açıklamalarını içeren liste
   final List<Map<String, String>> _imageData = [
     {
-      'image': 'assets/images/yurt1.jpg',
+      'image': 'https://images.unsplash.com/photo-1460317442991-0ec209397118?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8c3R1ZWRlbnQlMjBob3VzaW5nfGVufDB8fDB8fA%3D%3D',
       'description': 'Sabancı Üniversitesi Yurt Binası Dış Görünüm'
     },
     {
@@ -40,7 +40,7 @@ class _SabanciDormsScreenState extends State<SabanciDormsScreen> {
         title: const Text('Sabancı Yurtları'),
         backgroundColor: Colors.blue[900],
       ),
-      body: Column(
+      body: ListView(
         children: [
           // Carousel
           AspectRatio(
@@ -57,10 +57,13 @@ class _SabanciDormsScreenState extends State<SabanciDormsScreen> {
                   },
                   itemCount: _imageData.length,
                   itemBuilder: (context, index) {
+                    final imageUrl = _imageData[index]['image']!;
                     return Container(
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage(_imageData[index]['image']!),
+                          image: imageUrl.startsWith('http')
+                              ? NetworkImage(imageUrl)
+                              : AssetImage(imageUrl) as ImageProvider,
                           fit: BoxFit.cover,
                         ),
                       ),
