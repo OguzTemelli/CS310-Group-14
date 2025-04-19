@@ -7,6 +7,8 @@ import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/test_confirmation_screen.dart';
 import 'screens/test_screen.dart';
+import 'screens/upgrade_membership_screen.dart';
+import 'screens/payment_success_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -51,6 +53,9 @@ class MyApp extends StatelessWidget {
         '/feedback': (context) => const FeedbackScreen(),
         '/test-confirmation': (context) => const TestConfirmationScreen(),
         '/test': (context) => const TestScreen(),
+        '/upgrade-membership': (context) => const UpgradeMembershipScreen(),
+        '/payment-success':
+            (context) => const PaymentSuccessScreen(membershipType: 'Premium'),
       },
     );
   }
