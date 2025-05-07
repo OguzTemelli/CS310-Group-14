@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -282,7 +284,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ), // Rounded corners
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     final isValid = _formKey.currentState!.validate();
                     if (!isValid || !_agreeToTerms) {
                       showDialog(
@@ -302,7 +304,103 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       );
                       return;
                     }
-                    Navigator.pushReplacementNamed(context, '/login');
+                    // Firebase Auth ve Firestore entegrasyonu
+                    try {
+                      print('Starting registration process...');
+                      print('Email: ${_emailController.text.trim()}');
+                      print(
+                          'Password length: ${_passwordController.text.trim().length}');
+
+                      // Check if Firebase Auth is initialized
+                      if (FirebaseAuth.instance == null) {
+                        throw Exception('Firebase Auth is not initialized');
+                      }
+
+                      final credential = await FirebaseAuth.instance
+                          .createUserWithEmailAndPassword(
+                        email: _emailController.text.trim(),
+                        password: _passwordController.text.trim(),
+                      );
+
+                      print('Firebase Auth user created successfully');
+                      final user = credential.user;
+
+                      if (user != null) {
+                        print(
+                            'Creating Firestore document for user: ${user.uid}');
+                        try {
+                          // Create a Map with the user data
+                          final userData = {
+                            'uid': user.uid,
+                            'email': user.email,
+                            'firstName': _firstNameController.text.trim(),
+                            'lastName': _lastNameController.text.trim(),
+                            'phone': _phoneController.text.trim(),
+                            'createdAt': FieldValue.serverTimestamp(),
+                            'totalTests': 0,
+                            'averageScore': 0.0,
+                          };
+
+                          // Set the document with the Map
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(user.uid)
+                              .set(userData);
+
+                          print('Firestore document created successfully');
+
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Registration successful! Please log in.')),
+                            );
+                            Navigator.pushReplacementNamed(context, '/login');
+                          }
+                        } catch (e) {
+                          print('Error creating Firestore document: $e');
+                          // If Firestore fails, delete the auth user
+                          await user.delete();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Error creating user profile. Please try again.')),
+                            );
+                          }
+                        }
+                      }
+                    } on FirebaseAuthException catch (e) {
+                      print('FirebaseAuthException: ${e.code} - ${e.message}');
+                      String message = 'Registration failed.';
+                      if (e.code == 'email-already-in-use') {
+                        message = 'This email is already in use.';
+                      } else if (e.code == 'weak-password') {
+                        message = 'Password is too weak.';
+                      } else if (e.code == 'invalid-email') {
+                        message = 'Invalid email address.';
+                      } else if (e.code == 'operation-not-allowed') {
+                        message =
+                            'Email/password accounts are not enabled. Please contact support.';
+                      } else if (e.code == 'network-request-failed') {
+                        message =
+                            'Network error. Please check your internet connection.';
+                      }
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(message)),
+                        );
+                      }
+                    } catch (e) {
+                      print('General error during registration: $e');
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text('An error occurred: ' + e.toString())),
+                        );
+                      }
+                    }
                   },
                   child: const Text(
                     'SIGN UP',

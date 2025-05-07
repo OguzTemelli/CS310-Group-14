@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,25 +58,9 @@ class LoginScreen extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        // Username TextField
-                        TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Username',
-                            filled: true,
-                            fillColor: Colors.grey[200],
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide.none,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
                         // Email TextField
                         TextField(
+                          controller: _emailController,
                           decoration: InputDecoration(
                             hintText: 'Email Address',
                             filled: true,
@@ -78,6 +78,7 @@ class LoginScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         // Password TextField
                         TextField(
+                          controller: _passwordController,
                           obscureText: true,
                           decoration: InputDecoration(
                             hintText: 'Password',
@@ -96,8 +97,40 @@ class LoginScreen extends StatelessWidget {
                         const SizedBox(height: 24),
                         // Login Button
                         ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushReplacementNamed(context, '/home');
+                          onPressed: () async {
+                            try {
+                              final credential = await FirebaseAuth.instance
+                                  .signInWithEmailAndPassword(
+                                email: _emailController.text.trim(),
+                                password: _passwordController.text.trim(),
+                              );
+                              if (context.mounted) {
+                                Navigator.pushReplacementNamed(
+                                    context, '/home');
+                              }
+                            } on FirebaseAuthException catch (e) {
+                              String message = 'Login failed.';
+                              if (e.code == 'user-not-found') {
+                                message = 'No user found for that email.';
+                              } else if (e.code == 'wrong-password') {
+                                message = 'Wrong password provided.';
+                              } else if (e.code == 'invalid-email') {
+                                message = 'Invalid email address.';
+                              }
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(message)),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text('An error occurred: ' +
+                                          e.toString())),
+                                );
+                              }
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.deepOrange,
