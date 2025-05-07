@@ -45,4 +45,4 @@ app.*.map.json
 /android/app/release
 
 # Firebase auto-generated options
-lib/firebase_options.dart
+# lib/firebase_options.dart
