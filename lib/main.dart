@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/welcome_screen.dart';
@@ -12,12 +13,17 @@ import 'screens/upgrade_membership_screen.dart';
 import 'screens/payment_success_screen.dart';
 import 'screens/previous_results_screen.dart';
 import 'screens/best_matches_screen.dart';
-
-// Yeni ekranları import et
 import 'screens/sabanci_dorms_screen.dart';
 import 'screens/dorm_rules_screen.dart';
+import 'screens/membership_features_screen.dart';
+import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -60,13 +66,13 @@ class MyApp extends StatelessWidget {
         '/test-confirmation': (context) => const TestConfirmationScreen(),
         '/test': (context) => const TestScreen(),
         '/upgrade-membership': (context) => const UpgradeMembershipScreen(),
-        '/payment-success':
-            (context) => const PaymentSuccessScreen(membershipType: 'Premium'),
+        '/payment-success': (context) =>
+            const PaymentSuccessScreen(membershipType: 'Premium'),
         '/previous-results': (context) => const PreviousResultsScreen(),
         '/best-matches': (context) => const BestMatchesScreen(),
-        // Yeni rotalar
         '/dorms': (context) => const SabanciDormsScreen(),
         '/rules': (context) => const DormRulesScreen(),
+        '/membership-features': (context) => MembershipFeaturesScreen(),
       },
     );
   }
