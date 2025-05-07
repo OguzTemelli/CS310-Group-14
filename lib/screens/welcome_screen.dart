@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'registration_screen.dart'; // Import RegistrationScreen
 import 'login_screen.dart'; // Import LoginScreen (make sure you create this file)
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -25,7 +26,8 @@ class WelcomeScreen extends StatelessWidget {
               // Display the illustration from assets
               Image.asset(
                 'assets/images/welcome_illustration.png',
-                height: screenHeight * 0.35, // Adjust height relative to screen size
+                height: screenHeight *
+                    0.35, // Adjust height relative to screen size
                 errorBuilder: (context, error, stackTrace) {
                   // Display placeholder if image fails to load
                   print("Error loading image: $error");
@@ -66,7 +68,8 @@ class WelcomeScreen extends StatelessWidget {
                         backgroundColor: primaryButtonColor,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30), // Rounded corners
+                          borderRadius:
+                              BorderRadius.circular(30), // Rounded corners
                         ),
                       ),
                       onPressed: () {
@@ -87,7 +90,8 @@ class WelcomeScreen extends StatelessWidget {
                         backgroundColor: secondaryButtonColor,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30), // Rounded corners
+                          borderRadius:
+                              BorderRadius.circular(30), // Rounded corners
                         ),
                       ),
                       onPressed: () {
@@ -151,6 +155,7 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 20),
               const Spacer(flex: 1),
               // Optional: Add bottom navigation elements (arrows, dots) if needed.
               // For now, just adding some bottom padding.
