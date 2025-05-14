@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+// ----------------------- TestScreen -----------------------
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
 
@@ -8,76 +11,97 @@ class TestScreen extends StatefulWidget {
 }
 
 class _TestScreenState extends State<TestScreen> {
-  bool isEnglish = true; // true for English, false for Turkish
+  bool isEnglish = true;
   int currentQuestionIndex = 0;
 
-  // TODO: Bu sorular ileride API'den veya veritabanından çekilecek
+  // Questions: first is room size, then binary yes/no
   final List<Map<String, dynamic>> questions = [
+    {
+      'en': 'How many people do you want in your room?',
+      'tr': 'Kaç kişilik odada kalmak istiyorsun?',
+      'options': ['2', '4'],
+      'optionsTr': ['2', '4'],
+      'type': 'choice',
+    },
     {
       'en': 'Do you sleep late?',
       'tr': 'Geç mi uyursun?',
       'options': ['Yes', 'No'],
       'optionsTr': ['Evet', 'Hayır'],
+      'type': 'binary',
     },
     {
       'en': 'Do you prefer studying in silence?',
       'tr': 'Sessizlikte çalışmayı mı tercih edersin?',
       'options': ['Yes', 'No'],
       'optionsTr': ['Evet', 'Hayır'],
+      'type': 'binary',
     },
     {
       'en': 'Are you a social person?',
       'tr': 'Sosyal bir insan mısın?',
       'options': ['Yes', 'No'],
       'optionsTr': ['Evet', 'Hayır'],
+      'type': 'binary',
     },
     {
       'en': 'Do you like listening to music while studying?',
       'tr': 'Ders çalışırken müzik dinlemeyi sever misin?',
       'options': ['Yes', 'No'],
       'optionsTr': ['Evet', 'Hayır'],
+      'type': 'binary',
     },
     {
       'en': 'Do you keep your room clean and organized?',
       'tr': 'Odanı temiz ve düzenli tutar mısın?',
       'options': ['Yes', 'No'],
       'optionsTr': ['Evet', 'Hayır'],
+      'type': 'binary',
     },
   ];
 
-  List<String?> answers = List.filled(5, null);
-
-  // TODO: İleride kullanılacak metodlar
-  Future<void> _loadQuestions() async {
-    // API'den veya veritabanından soruları yükleme
-    // setState(() {
-    //   questions = ...
-    // });
-  }
-
-  Future<void> _submitAnswers() async {
-    // Cevapları API'ye gönderme
-    // await api.submitAnswers(answers);
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      '/best-matches',
-      (route) => false,
-    );
-  }
+  late List<String?> answers;
 
   @override
   void initState() {
     super.initState();
-    // _loadQuestions(); // İleride aktif edilecek
+    // Initialize answers based on questions length
+    answers = List<String?>.filled(questions.length, null);
   }
 
-  void _handleAnswer(String answer) {
-    setState(() {
-      answers[currentQuestionIndex] = answer;
-      if (currentQuestionIndex < questions.length - 1) {
-        currentQuestionIndex++;
-      }
+  Future<void> _submitAnswers() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in before taking the test.')),
+      );
+      return;
+    }
+
+    // Parse room size filter
+    final int roomSize = int.parse(answers[0]!);
+    // Convert remaining answers to binary vector
+    final List<int> vector = answers
+        .sublist(1)
+        .map((a) => a == 'Yes' ? 1 : 0)
+        .toList();
+
+    await FirebaseFirestore.instance
+        .collection('user_answers')
+        .doc(user.uid)
+        .set({
+      'roomSize': roomSize,
+      'answers': vector,
+      'email': user.email ?? '',
+      'displayName': user.displayName ?? '',
+      'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/best-matches',
+          (route) => false,
+    );
   }
 
   @override
@@ -85,10 +109,7 @@ class _TestScreenState extends State<TestScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue.shade800,
-        title: const Text(
-          'Roommate Test',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Roommate Test', style: TextStyle(color: Colors.white)),
         centerTitle: true,
       ),
       body: Container(
@@ -98,8 +119,6 @@ class _TestScreenState extends State<TestScreen> {
           child: Column(
             children: [
               const SizedBox(height: 40),
-
-              // Title
               const Text(
                 'Find Your\nPerfect Match!',
                 textAlign: TextAlign.center,
@@ -109,11 +128,12 @@ class _TestScreenState extends State<TestScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const SizedBox(height: 60),
 
               // Questions
               ...List.generate(questions.length, (index) {
+                final q = questions[index];
+                final opts = isEnglish ? q['options'] : q['optionsTr'];
                 return Column(
                   children: [
                     Container(
@@ -125,18 +145,14 @@ class _TestScreenState extends State<TestScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Question ${index + 1}',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
+                          Text('Question ${index + 1}',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              )),
                           const SizedBox(height: 8),
                           Text(
-                            isEnglish
-                                ? questions[index]['en']
-                                : questions[index]['tr'],
+                            isEnglish ? q['en'] : q['tr'],
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -147,16 +163,12 @@ class _TestScreenState extends State<TestScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              _buildAnswerButton(
-                                index: index,
-                                isYes: true,
-                                isSelected: answers[index] == 'Yes',
-                              ),
-                              _buildAnswerButton(
-                                index: index,
-                                isYes: false,
-                                isSelected: answers[index] == 'No',
-                              ),
+                              for (var opt in opts)
+                                _buildAnswerButton(
+                                  index: index,
+                                  answerValue: opt,
+                                  isSelected: answers[index] == opt,
+                                ),
                             ],
                           ),
                         ],
@@ -169,26 +181,12 @@ class _TestScreenState extends State<TestScreen> {
 
               const SizedBox(height: 40),
 
-              // Submit button
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade600,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    print('Answers: $answers');
-                    _submitAnswers();
-                  },
-                  child: const Text(
-                    'SUBMIT',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  onPressed: _submitAnswers,
+                  child: const Text('SUBMIT'),
                 ),
               ),
             ],
@@ -200,37 +198,34 @@ class _TestScreenState extends State<TestScreen> {
 
   Widget _buildAnswerButton({
     required int index,
-    required bool isYes,
+    required String answerValue,
     required bool isSelected,
   }) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          answers[index] = isYes ? 'Yes' : 'No';
+          answers[index] = answerValue;
+          if (questions[index]['type'] == 'choice') currentQuestionIndex = 1;
         });
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color:
-              isSelected ? Colors.blue.shade600 : Colors.white.withOpacity(0.1),
+          color: isSelected
+              ? Colors.blue.shade600
+              : Colors.white.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color:
-                isSelected
-                    ? Colors.blue.shade400
-                    : Colors.white.withOpacity(0.3),
+            color: isSelected
+                ? Colors.blue.shade400
+                : Colors.white.withOpacity(0.3),
             width: 2,
           ),
         ),
-        child: Text(
-          isYes ? 'Yes' : 'No',
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.white70,
-            fontSize: 16,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
+        child: Text(answerValue,
+            style: TextStyle(
+                color: isSelected ? Colors.white : Colors.white70,
+                fontSize: 16)),
       ),
     );
   }
