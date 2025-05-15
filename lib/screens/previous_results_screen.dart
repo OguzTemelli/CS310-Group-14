@@ -116,7 +116,7 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
           ),
           child: ClipOval(
             child: Image.asset(
-              'assets/images/test_icon.png',
+              'assets/images/test_icon.svg',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return const Icon(

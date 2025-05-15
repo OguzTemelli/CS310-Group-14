@@ -24,85 +24,118 @@ class ContactScreen extends StatelessWidget {
         width: double.infinity,
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 40),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 40),
 
-              // Title
-              const Text(
-                'We are here\nto help you!',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 60),
-
-              // Contact Us section
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Contact us',
+                // Title
+                const Text(
+                  'We are here\nto help you!',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 60),
 
-              // Email info
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'matchmate@matchmate.com',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ),
-
-              const SizedBox(height: 5),
-
-              // Phone info
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '+90 555 123 4567',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // Location info
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  height: 250,
-                  width: double.infinity,
-                  color: Colors.white.withOpacity(0.1),
-                  child: const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.location_on, color: Colors.white, size: 48),
-                        SizedBox(height: 16),
-                        Text(
-                          'Sabancı Üniversitesi\nOrta Mahalle, 34956\nTuzla/İstanbul',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                        ),
-                      ],
+                // Contact Us section
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Contact us',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 10),
+
+                // Email info
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'matchmate@matchmate.com',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+
+                const SizedBox(height: 5),
+
+                // Phone info
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '+90 555 123 4567',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                // Location info (Google Maps placeholder)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    height: 250,
+                    width: double.infinity,
+                    color: Colors.white.withOpacity(0.1),
+                    child: const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.location_on, color: Colors.white, size: 48),
+                          SizedBox(height: 16),
+                          Text(
+                            'Sabancı Üniversitesi\nOrta Mahalle, 34956\nTuzla/İstanbul',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Campus Map
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    height: 250,
+                    width: double.infinity,
+                    color: Colors.white.withOpacity(0.1),
+                    child: Image.asset(
+                      'assets/images/campus_map.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.error, color: Colors.white, size: 48),
+                              SizedBox(height: 16),
+                              Text(
+                                'Could not load campus map',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

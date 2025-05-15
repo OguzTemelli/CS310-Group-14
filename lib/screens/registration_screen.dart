@@ -149,7 +149,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       padding: EdgeInsets.all(15.0),
                       // Placeholder for flag/country code selector
                       child: Text(
-                        '🇺🇸 +1',
+                        'tr +90',
                         style: TextStyle(color: Colors.black54),
                       ),
                     ),
