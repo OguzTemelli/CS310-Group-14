@@ -1,4 +1,8 @@
+// previous_results_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PreviousResultsScreen extends StatefulWidget {
   const PreviousResultsScreen({super.key});
@@ -8,31 +12,34 @@ class PreviousResultsScreen extends StatefulWidget {
 }
 
 class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
-  final List<Map<String, dynamic>> _tests = [
-    {'name': 'test8', 'status': 'Submitted', 'number': 1},
-    {'name': 'test7', 'status': 'Removed', 'number': 2},
-    {'name': 'test6', 'status': 'Removed', 'number': 3},
-  ];
-
-  void _removeTest(int index) {
-    setState(() {
-      _tests[index]['status'] = 'Removed';
-    });
-  }
+  User? get _user => FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
+    if (_user == null) {
+      // Not signed in
+      return Scaffold(
+        body: Center(child: Text('Please log in to see your results')),
+      );
+    }
+
+    final testsStream = FirebaseFirestore.instance
+        .collection('users')
+        .doc(_user!.uid)
+        .collection('tests')
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1a237e), // Koyu mavi arka plan
+      backgroundColor: const Color(0xFF1A237E),
       body: SafeArea(
         child: Column(
           children: [
-            // Header with back button
+            // — Header with back button + title —
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Row(
                 children: [
-                  // Back Button
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.1),
@@ -48,7 +55,6 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  // Title
                   const Text(
                     'Previous Results',
                     style: TextStyle(
@@ -60,18 +66,51 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                 ],
               ),
             ),
-            // Results List
+
+            // — Stream of test documents —
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(20),
-                itemCount: _tests.length,
-                itemBuilder: (context, index) {
-                  final test = _tests[index];
-                  return _buildResultItem(
-                    test['name'],
-                    test['status'],
-                    test['number'],
-                    onRemove: test['status'] == 'Submitted' ? () => _removeTest(index) : null,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: testsStream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No previous tests found.',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    );
+                  }
+
+                  final docs = snapshot.data!.docs;
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(20),
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                      final doc = docs[index];
+                      final data = doc.data()! as Map<String, dynamic>;
+                      final name = data['name'] as String? ?? 'Unnamed';
+                      final status = data['status'] as String? ?? '';
+                      final number = data['number'] as int? ?? (index + 1);
+
+                      return _buildResultItem(
+                        name,
+                        status,
+                        number,
+                        onRemove: status == 'Submitted'
+                            ? () {
+                                FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(_user!.uid)
+                                    .collection('tests')
+                                    .doc(doc.id)
+                                    .update({'status': 'Removed'});
+                              }
+                            : null,
+                      );
+                    },
                   );
                 },
               ),
@@ -106,7 +145,8 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
         ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         leading: Container(
           width: 50,
           height: 50,
@@ -114,18 +154,10 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
             color: Colors.white.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: ClipOval(
-            child: Image.asset(
-              'assets/images/test_icon.png',
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(
-                  Icons.assignment,
-                  color: Colors.white70,
-                  size: 30,
-                );
-              },
-            ),
+          child: const Icon(
+            Icons.assignment,
+            color: Colors.white70,
+            size: 30,
           ),
         ),
         title: Text(
@@ -146,6 +178,7 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Number bubble
             Container(
               width: 30,
               height: 30,
@@ -163,6 +196,8 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                 ),
               ),
             ),
+
+            // Remove button, if allowed
             if (onRemove != null) ...[
               const SizedBox(width: 10),
               IconButton(
@@ -175,4 +210,4 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
       ),
     );
   }
-} 
+}

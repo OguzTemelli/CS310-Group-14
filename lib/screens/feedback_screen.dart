@@ -80,14 +80,15 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 ),
                 child: TextField(
                   controller: _feedbackController,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.blue),    // user input in blue
+                  cursorColor: Colors.blue,                       // blue cursor
                   maxLines: null,
                   expands: true,
                   decoration: const InputDecoration(
                     contentPadding: EdgeInsets.all(16),
                     border: InputBorder.none,
                     hintText: 'Write your feedback here...',
-                    hintStyle: TextStyle(color: Colors.white70),
+                    hintStyle: TextStyle(color: Colors.blue),     // placeholder in blue
                   ),
                 ),
               ),

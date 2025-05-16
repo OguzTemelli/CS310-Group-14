@@ -149,7 +149,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       padding: EdgeInsets.all(15.0),
                       // Placeholder for flag/country code selector
                       child: Text(
-                        '🇺🇸 +1',
+                        'tr +90',
                         style: TextStyle(color: Colors.black54),
                       ),
                     ),
@@ -326,6 +326,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       final user = credential.user;
 
                       if (user != null) {
+                        // Set the user's display name
+                        String fullName = "${_firstNameController.text.trim()} ${_lastNameController.text.trim()}";
+                        await user.updateDisplayName(fullName);
+                        
                         print(
                             'Creating Firestore document for user: ${user.uid}');
                         try {
@@ -335,6 +339,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             'email': user.email,
                             'firstName': _firstNameController.text.trim(),
                             'lastName': _lastNameController.text.trim(),
+                            'displayName': fullName, // Store the full name
                             'phone': _phoneController.text.trim(),
                             'createdAt': FieldValue.serverTimestamp(),
                             'totalTests': 0,

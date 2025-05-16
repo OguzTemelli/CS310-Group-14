@@ -70,6 +70,32 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   Future<void> _submitAnswers() async {
+    // (You can leave your existing null‐check in place if you like;
+    // but now the button is disabled until all are answered.)
+    if (answers.contains(null)) {
+      List<int> unansweredIndexes = [];
+      for (int i = 0; i < answers.length; i++) {
+        if (answers[i] == null) unansweredIndexes.add(i + 1);
+      }
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Incomplete Test'),
+          content: Text(
+            'Please answer all questions before submitting.\n\n'
+            'Unanswered questions: ${unansweredIndexes.join(", ")}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -78,9 +104,7 @@ class _TestScreenState extends State<TestScreen> {
       return;
     }
 
-    // Parse room size filter
     final int roomSize = int.parse(answers[0]!);
-    // Convert remaining answers to binary vector
     final List<int> vector = answers
         .sublist(1)
         .map((a) => a == 'Yes' ? 1 : 0)
@@ -100,16 +124,20 @@ class _TestScreenState extends State<TestScreen> {
     Navigator.pushNamedAndRemoveUntil(
       context,
       '/best-matches',
-          (route) => false,
+      (route) => false,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Determine whether all questions have been answered:
+    final bool allAnswered = !answers.contains(null);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue.shade800,
-        title: const Text('Roommate Test', style: TextStyle(color: Colors.white)),
+        title: const Text('Roommate Test',
+            style: TextStyle(color: Colors.white)),
         centerTitle: true,
       ),
       body: Container(
@@ -181,11 +209,21 @@ class _TestScreenState extends State<TestScreen> {
 
               const SizedBox(height: 40),
 
+              // Here’s the only change: button is disabled if not allAnswered
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _submitAnswers,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,               // light background
+                    foregroundColor: Colors.blue.shade800,    
+                    disabledForegroundColor: Colors.blue.shade800,  // dark text
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onPressed: allAnswered ? _submitAnswers : null,
                   child: const Text('SUBMIT'),
                 ),
               ),
