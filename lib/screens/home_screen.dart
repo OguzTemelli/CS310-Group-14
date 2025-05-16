@@ -1,7 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+  
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String userName = 'User';
+  String userEmail = 'user@example.com';
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reload user data whenever the screen rebuilds
+    _loadUserData();
+  }
+  
+  void _loadUserData() {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      // Force a refresh of the user info from Firebase
+      currentUser.reload().then((_) {
+        // Get the latest user data
+        final refreshedUser = FirebaseAuth.instance.currentUser;
+        if (refreshedUser != null) {
+          setState(() {
+            // Use display name if available, otherwise extract name from email
+            userName = refreshedUser.displayName ?? 
+                      refreshedUser.email?.split('@')[0] ?? 'User';
+            userEmail = refreshedUser.email ?? 'user@example.com';
+            
+            print('User data loaded: $userName, $userEmail');
+          });
+        }
+      }).catchError((error) {
+        print('Error reloading user data: $error');
+      });
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,9 +103,9 @@ class HomeScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Welcome User',
-                              style: TextStyle(
+                            Text(
+                              'Welcome $userName',
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
@@ -67,7 +113,7 @@ class HomeScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'user@sabanciuniv.edu',
+                              userEmail,
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.7),
                                 fontSize: 14,
@@ -183,6 +229,8 @@ class HomeScreen extends StatelessWidget {
                 ),
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    // Sign out the user
+                    FirebaseAuth.instance.signOut();
                     Navigator.pushNamedAndRemoveUntil(
                       context,
                       '/welcome',
