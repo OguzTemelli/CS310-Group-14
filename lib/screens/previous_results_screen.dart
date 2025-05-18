@@ -23,9 +23,12 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
       );
     }
 
+    // Stream from the 'tests' subcollection
     final testsStream = FirebaseFirestore.instance
-        .collection('user_answers')
+        .collection('users')
         .doc(_user!.uid)
+        .collection('tests')
+        .orderBy('timestamp', descending: true) // Order by timestamp
         .snapshots();
 
     return Scaffold(
@@ -67,13 +70,13 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
 
             // — Stream of test documents —
             Expanded(
-              child: StreamBuilder<DocumentSnapshot>(
+              child: StreamBuilder<QuerySnapshot>(
                 stream: testsStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (!snapshot.hasData || !snapshot.data!.exists) {
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return const Center(
                       child: Text(
                         'No previous tests found.',
@@ -82,26 +85,38 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                     );
                   }
 
-                  final data = snapshot.data!.data() as Map<String, dynamic>;
-                  final roomSize = data['roomSize'] as int? ?? 0;
-                  final answers = List<int>.from(data['answers'] ?? []);
-                  final email = data['email'] as String? ?? '';
-                  final displayName = data['displayName'] as String? ?? '';
-                  final updatedAt = data['updatedAt'] as Timestamp?;
-
-                  return ListView(
+                  final docs = snapshot.data!.docs;
+                  return ListView.builder(
                     padding: const EdgeInsets.all(20),
-                    children: [
-                      _buildResultItem(
-                        displayName,
-                        'Completed',
-                        1,
-                        'Room Size: $roomSize',
-                        onRemove: null,
-                      ),
-                      const SizedBox(height: 10),
-                      _buildAnswerDetails(answers),
-                    ],
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                      final doc = docs[index];
+                      final data = doc.data()! as Map<String, dynamic>;
+                      final roomSize = data['roomSize'] as int? ?? 0; // Get roomSize
+                      final answers = List<int>.from(data['answers'] ?? []); // Get answers
+                      final savedStatus = data['status'] as String? ?? ''; // Get saved status
+                      final testNumber = docs.length - index; // Calculate test number (newest is 1)
+
+                      // Determine display status based on index (newest is Valid)
+                      final displayStatus = index == 0 ? 'Valid' : 'Invalid';
+
+                      return _buildTestResultItem(
+                        testNumber: testNumber,
+                        roomSize: roomSize,
+                        status: displayStatus, // Use the determined display status
+                        answers: answers, // Pass answers to the new widget
+                        onRemove: savedStatus == 'Completed' // Use saved status for remove logic if needed
+                            ? () {
+                                FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(_user!.uid)
+                                    .collection('tests')
+                                    .doc(doc.id)
+                                    .update({'status': 'Removed'});
+                              }
+                            : null,
+                      );
+                    },
                   );
                 },
               ),
@@ -112,103 +127,14 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
     );
   }
 
-  Widget _buildResultItem(
-    String name,
-    String status,
-    int number,
-    String testName, {
+  // New widget to build each test result item with expandable details
+  Widget _buildTestResultItem({
+    required int testNumber,
+    required int roomSize,
+    required String status,
+    required List<int> answers,
     VoidCallback? onRemove,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.1),
-            Colors.white.withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              number.toString(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-        title: Text(
-          testName,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Name: $name',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
-                fontSize: 14,
-              ),
-            ),
-            Text(
-              'Status: $status',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Remove button, if allowed
-            if (onRemove != null)
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.white70),
-                onPressed: onRemove,
-              ),
-            // Best Matches button
-            IconButton(
-              icon: const Icon(Icons.arrow_forward_ios, color: Colors.white70), // You can change the icon if you prefer
-              onPressed: () {
-                // Navigate to the best matches screen for this result
-                // Assuming the best matches screen can fetch based on the current user's latest test result
-                Navigator.pushNamed(context, '/best-matches');
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnswerDetails(List<int> answers) {
     final questions = [
       'Sleep late',
       'Prefer studying in silence',
@@ -217,60 +143,115 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
       'Keep room clean and organized',
     ];
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.1),
-            Colors.white.withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Your Answers:',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    // Determine the background color based on the status
+    final backgroundColor = status == 'Valid'
+        ? Colors.green.withOpacity(0.2) // Greenish tone for Valid
+        : Colors.white.withOpacity(0.1); // Existing color for others
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 15),
+      color: backgroundColor, // Use the determined background color
+      child: ExpansionTile(
+        tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              testNumber.toString(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-          const SizedBox(height: 10),
-          ...List.generate(questions.length, (index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  Text(
-                    questions[index],
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 14,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    answers[index] == 1 ? 'Yes' : 'No',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+        ),
+        title: Text(
+          'Test #$testNumber - Room Size: $roomSize',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        subtitle: Text(
+          'Status: $status',
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.7),
+            fontSize: 14,
+          ),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (onRemove != null)
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.white70),
+                onPressed: onRemove,
               ),
-            );
-          }),
+            // Add Best Matches button here
+            IconButton(
+              icon: const Icon(Icons.arrow_forward_ios, color: Colors.white70),
+              onPressed: () {
+                // TODO: Pass the test ID or relevant data to the best matches screen
+                Navigator.pushNamed(context, '/best-matches');
+              },
+            ),
+          ],
+        ),
+        children: [ // Content that shows when the tile is expanded
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Your Answers:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ...List.generate(answers.length, (index) {
+                  // Ensure the index is within the bounds of questions list
+                  if (index < questions.length) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Text(
+                            questions[index],
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.7),
+                              fontSize: 14,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            answers[index] == 1 ? 'Yes' : 'No',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    // Handle unexpected index if necessary (e.g., log a warning)
+                    return Container(); // Return an empty container for invalid indices
+                  }
+                }),
+              ],
+            ),
+          ),
         ],
       ),
     );

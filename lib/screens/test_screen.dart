@@ -110,15 +110,18 @@ class _TestScreenState extends State<TestScreen> {
         .map((a) => a == 'Yes' ? 1 : 0)
         .toList();
 
+    // Save the test result as a new document in a subcollection
     await FirebaseFirestore.instance
-        .collection('user_answers')
+        .collection('users')
         .doc(user.uid)
-        .set({
+        .collection('tests')
+        .add({
       'roomSize': roomSize,
       'answers': vector,
       'email': user.email ?? '',
       'displayName': user.displayName ?? '',
-      'updatedAt': FieldValue.serverTimestamp(),
+      'timestamp': FieldValue.serverTimestamp(), // Use server timestamp for ordering
+      'status': 'Completed', // Add a status field
     });
 
     Navigator.pushNamedAndRemoveUntil(
@@ -209,7 +212,7 @@ class _TestScreenState extends State<TestScreen> {
 
               const SizedBox(height: 40),
 
-              // Here’s the only change: button is disabled if not allAnswered
+              // Here's the only change: button is disabled if not allAnswered
               SizedBox(
                 width: double.infinity,
                 height: 50,
