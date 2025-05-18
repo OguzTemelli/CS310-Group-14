@@ -24,10 +24,8 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
     }
 
     final testsStream = FirebaseFirestore.instance
-        .collection('users')
+        .collection('user_answers')
         .doc(_user!.uid)
-        .collection('tests')
-        .orderBy('timestamp', descending: true)
         .snapshots();
 
     return Scaffold(
@@ -69,13 +67,13 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
 
             // — Stream of test documents —
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
+              child: StreamBuilder<DocumentSnapshot>(
                 stream: testsStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  if (!snapshot.hasData || !snapshot.data!.exists) {
                     return const Center(
                       child: Text(
                         'No previous tests found.',
@@ -84,33 +82,26 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                     );
                   }
 
-                  final docs = snapshot.data!.docs;
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: docs.length,
-                    itemBuilder: (context, index) {
-                      final doc = docs[index];
-                      final data = doc.data()! as Map<String, dynamic>;
-                      final name = data['name'] as String? ?? 'Unnamed';
-                      final status = data['status'] as String? ?? '';
-                      final number = data['number'] as int? ?? (index + 1);
+                  final data = snapshot.data!.data() as Map<String, dynamic>;
+                  final roomSize = data['roomSize'] as int? ?? 0;
+                  final answers = List<int>.from(data['answers'] ?? []);
+                  final email = data['email'] as String? ?? '';
+                  final displayName = data['displayName'] as String? ?? '';
+                  final updatedAt = data['updatedAt'] as Timestamp?;
 
-                      return _buildResultItem(
-                        name,
-                        status,
-                        number,
-                        onRemove: status == 'Submitted'
-                            ? () {
-                                FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(_user!.uid)
-                                    .collection('tests')
-                                    .doc(doc.id)
-                                    .update({'status': 'Removed'});
-                              }
-                            : null,
-                      );
-                    },
+                  return ListView(
+                    padding: const EdgeInsets.all(20),
+                    children: [
+                      _buildResultItem(
+                        displayName,
+                        'Completed',
+                        1,
+                        'Room Size: $roomSize',
+                        onRemove: null,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildAnswerDetails(answers),
+                    ],
                   );
                 },
               ),
@@ -122,9 +113,10 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
   }
 
   Widget _buildResultItem(
-    String testName,
+    String name,
     String status,
-    int number, {
+    int number,
+    String testName, {
     VoidCallback? onRemove,
   }) {
     return Container(
@@ -154,10 +146,15 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
             color: Colors.white.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.assignment,
-            color: Colors.white70,
-            size: 30,
+          child: Center(
+            child: Text(
+              number.toString(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
         title: Text(
@@ -168,45 +165,113 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        subtitle: Text(
-          status,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
-            fontSize: 14,
-          ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Name: $name',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+              ),
+            ),
+            Text(
+              'Status: $status',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Number bubble
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  number.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-
             // Remove button, if allowed
-            if (onRemove != null) ...[
-              const SizedBox(width: 10),
+            if (onRemove != null)
               IconButton(
-                icon: const Icon(Icons.close, color: Colors.white70),
+                icon: const Icon(Icons.delete, color: Colors.white70),
                 onPressed: onRemove,
               ),
-            ],
+            // Best Matches button
+            IconButton(
+              icon: const Icon(Icons.arrow_forward_ios, color: Colors.white70), // You can change the icon if you prefer
+              onPressed: () {
+                // Navigate to the best matches screen for this result
+                // Assuming the best matches screen can fetch based on the current user's latest test result
+                Navigator.pushNamed(context, '/best-matches');
+              },
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAnswerDetails(List<int> answers) {
+    final questions = [
+      'Sleep late',
+      'Prefer studying in silence',
+      'Social person',
+      'Listen to music while studying',
+      'Keep room clean and organized',
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.1),
+            Colors.white.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Your Answers:',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...List.generate(questions.length, (index) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Text(
+                    questions[index],
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 14,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    answers[index] == 1 ? 'Yes' : 'No',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
