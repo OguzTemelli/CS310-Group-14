@@ -124,10 +124,11 @@ class _TestScreenState extends State<TestScreen> {
       'status': 'Completed', // Add a status field
     });
 
+    // Navigate to Best Matches and remove all routes except Home
     Navigator.pushNamedAndRemoveUntil(
       context,
       '/best-matches',
-      (route) => false,
+      (route) => route.settings.name == '/home', // Keep Home route
     );
   }
 

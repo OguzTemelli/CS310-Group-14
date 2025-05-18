@@ -1,4 +1,3 @@
-
 // screens/best_matches_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -82,8 +81,7 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                        context, '/home', (route) => false),
+                    onPressed: () => Navigator.pop(context),
                   ),
                   const SizedBox(width: 20),
                   const Text(

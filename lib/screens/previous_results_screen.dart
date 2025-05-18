@@ -105,14 +105,24 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                         roomSize: roomSize,
                         status: displayStatus, // Use the determined display status
                         answers: answers, // Pass answers to the new widget
-                        onRemove: savedStatus == 'Completed' // Use saved status for remove logic if needed
+                        onRemove: savedStatus == 'Completed' // Show soft delete for Completed tests
                             ? () {
                                 FirebaseFirestore.instance
                                     .collection('users')
                                     .doc(_user!.uid)
                                     .collection('tests')
                                     .doc(doc.id)
-                                    .update({'status': 'Removed'});
+                                    .update({'status': 'Deleted'}); // Change status to Deleted
+                              }
+                            : null,
+                        onHardDelete: savedStatus == 'Deleted' // Show hard delete for Deleted tests
+                            ? () {
+                                FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(_user!.uid)
+                                    .collection('tests')
+                                    .doc(doc.id)
+                                    .delete(); // Completely delete the document
                               }
                             : null,
                       );
@@ -134,6 +144,7 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
     required String status,
     required List<int> answers,
     VoidCallback? onRemove,
+    VoidCallback? onHardDelete,
   }) {
     final questions = [
       'Sleep late',
@@ -146,7 +157,9 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
     // Determine the background color based on the status
     final backgroundColor = status == 'Valid'
         ? Colors.green.withOpacity(0.2) // Greenish tone for Valid
-        : Colors.white.withOpacity(0.1); // Existing color for others
+        : status == 'Deleted'
+            ? Colors.red.withOpacity(0.2) // Reddish tone for Deleted
+            : Colors.white.withOpacity(0.1); // Existing color for others
 
     return Card(
       margin: const EdgeInsets.only(bottom: 15),
@@ -188,10 +201,15 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (onRemove != null)
+            if (onRemove != null) // Show soft delete for Valid/Completed tests
               IconButton(
-                icon: const Icon(Icons.delete, color: Colors.white70),
+                icon: const Icon(Icons.delete, color: Colors.white70), // Soft delete icon
                 onPressed: onRemove,
+              ),
+            if (onHardDelete != null) // Show hard delete for Deleted tests
+              IconButton(
+                icon: const Icon(Icons.delete_forever, color: Colors.redAccent), // Hard delete icon (red)
+                onPressed: onHardDelete,
               ),
             // Add Best Matches button here
             IconButton(
@@ -203,7 +221,7 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
             ),
           ],
         ),
-        children: [ // Content that shows when the tile is expanded
+        children: status == 'Deleted' ? [] : [ // Hide children if status is Deleted
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Column(
