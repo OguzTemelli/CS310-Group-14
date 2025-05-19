@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -272,144 +272,140 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 const SizedBox(height: 30),
 
                 // Sign Up Button
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Colors.white, // White background for contrast
-                    foregroundColor: Colors.blue.shade900, // Dark blue text
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        30,
-                      ), // Rounded corners
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade800,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  ),
-                  onPressed: () async {
-                    final isValid = _formKey.currentState!.validate();
-                    if (!isValid || !_agreeToTerms) {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Invalid Submission'),
-                          content: const Text(
-                            'Please fix the errors and agree to the terms before submitting.',
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate() && _agreeToTerms) {
+                        // Validate password match
+                        if (_passwordController.text != _confirmPasswordController.text) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Passwords do not match')),
+                          );
+                          return;
+                        }
+
+                        // Show loading indicator
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(
+                            child: CircularProgressIndicator(),
                           ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(ctx).pop(),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
-                      return;
-                    }
-                    // Firebase Auth ve Firestore entegrasyonu
-                    try {
-                      print('Starting registration process...');
-                      print('Email: ${_emailController.text.trim()}');
-                      print(
-                          'Password length: ${_passwordController.text.trim().length}');
+                        );
 
-                      // Check if Firebase Auth is initialized
-                      if (FirebaseAuth.instance == null) {
-                        throw Exception('Firebase Auth is not initialized');
-                      }
-
-                      final credential = await FirebaseAuth.instance
-                          .createUserWithEmailAndPassword(
-                        email: _emailController.text.trim(),
-                        password: _passwordController.text.trim(),
-                      );
-
-                      print('Firebase Auth user created successfully');
-                      final user = credential.user;
-
-                      if (user != null) {
-                        // Set the user's display name
-                        String fullName = "${_firstNameController.text.trim()} ${_lastNameController.text.trim()}";
-                        await user.updateDisplayName(fullName);
-                        
-                        print(
-                            'Creating Firestore document for user: ${user.uid}');
                         try {
-                          // Create a Map with the user data
-                          final userData = {
-                            'uid': user.uid,
-                            'email': user.email,
-                            'firstName': _firstNameController.text.trim(),
-                            'lastName': _lastNameController.text.trim(),
-                            'displayName': fullName, // Store the full name
-                            'phone': _phoneController.text.trim(),
-                            'createdAt': FieldValue.serverTimestamp(),
-                            'totalTests': 0,
-                            'averageScore': 0.0,
-                          };
+                          // Check if Firebase Auth is initialized
+                          if (FirebaseAuth.instance == null) {
+                            throw Exception('Firebase Auth is not initialized');
+                          }
 
-                          // Set the document with the Map
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(user.uid)
-                              .set(userData);
+                          final credential = await FirebaseAuth.instance
+                              .createUserWithEmailAndPassword(
+                            email: _emailController.text.trim(),
+                            password: _passwordController.text.trim(),
+                          );
 
-                          print('Firestore document created successfully');
+                          print('Firebase Auth user created successfully');
+                          final user = credential.user;
 
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Registration successful! Please log in.')),
-                            );
-                            Navigator.pushReplacementNamed(context, '/login');
+                          if (user != null) {
+                            // Set the user's display name
+                            String fullName = "${_firstNameController.text.trim()} ${_lastNameController.text.trim()}";
+                            await user.updateDisplayName(fullName);
+                            
+                            print('Creating database record for user: ${user.uid}');
+                            try {
+                              // Create a Map with the user data
+                              final userData = {
+                                'uid': user.uid,
+                                'email': user.email,
+                                'firstName': _firstNameController.text.trim(),
+                                'lastName': _lastNameController.text.trim(),
+                                'displayName': fullName, // Store the full name
+                                'phone': _phoneController.text.trim(),
+                                'createdAt': ServerValue.timestamp,
+                                'totalTests': 0,
+                                'averageScore': 0.0,
+                              };
+
+                              // Set the user data in Realtime Database
+                              await FirebaseDatabase.instance
+                                  .ref()
+                                  .child('users')
+                                  .child(user.uid)
+                                  .child('profile')
+                                  .set(userData);
+
+                              print('Database record created successfully');
+
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Registration successful! Please log in.')),
+                                );
+                                Navigator.pushReplacementNamed(context, '/login');
+                              }
+                            } catch (e) {
+                              print('Error creating database record: $e');
+                              // If database fails, delete the auth user
+                              await user.delete();
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Error creating user profile. Please try again.')),
+                                );
+                              }
+                            }
                           }
                         } catch (e) {
-                          print('Error creating Firestore document: $e');
-                          // If Firestore fails, delete the auth user
-                          await user.delete();
+                          // Handle specific Firebase Auth errors
+                          String errorMessage = 'An error occurred during registration';
+                          
+                          if (e is FirebaseAuthException) {
+                            switch (e.code) {
+                              case 'email-already-in-use':
+                                errorMessage = 'This email is already registered';
+                                break;
+                              case 'weak-password':
+                                errorMessage = 'Password is too weak';
+                                break;
+                              default:
+                                errorMessage = 'Authentication error: ${e.message}';
+                            }
+                          }
+                          
+                          // Close loading dialog
                           if (context.mounted) {
+                            Navigator.of(context).pop();
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Error creating user profile. Please try again.')),
+                              SnackBar(content: Text(errorMessage)),
                             );
                           }
                         }
-                      }
-                    } on FirebaseAuthException catch (e) {
-                      print('FirebaseAuthException: ${e.code} - ${e.message}');
-                      String message = 'Registration failed.';
-                      if (e.code == 'email-already-in-use') {
-                        message = 'This email is already in use.';
-                      } else if (e.code == 'weak-password') {
-                        message = 'Password is too weak.';
-                      } else if (e.code == 'invalid-email') {
-                        message = 'Invalid email address.';
-                      } else if (e.code == 'operation-not-allowed') {
-                        message =
-                            'Email/password accounts are not enabled. Please contact support.';
-                      } else if (e.code == 'network-request-failed') {
-                        message =
-                            'Network error. Please check your internet connection.';
-                      }
-                      if (context.mounted) {
+                      } else if (!_agreeToTerms) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(message)),
-                        );
-                      }
-                    } catch (e) {
-                      print('General error during registration: $e');
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                               content:
-                                  Text('An error occurred: ' + e.toString())),
+                                  Text('Please agree to the terms and conditions')),
                         );
                       }
-                    }
-                  },
-                  child: const Text(
-                    'SIGN UP',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    },
+                    child: const Text('REGISTER'),
                   ),
                 ),
                 const SizedBox(height: 20),

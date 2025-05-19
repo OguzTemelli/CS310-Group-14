@@ -18,12 +18,18 @@ import 'screens/dorm_rules_screen.dart';
 import 'screens/membership_features_screen.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Firebase Realtime Database'i varsayılan URL'e ayarla
+  FirebaseDatabase database = FirebaseDatabase.instance;
+  database.databaseURL = 'https://matchmate-bugraydin-default-rtdb.europe-west1.firebasedatabase.app/';
+  
   runApp(const MyApp());
 }
 

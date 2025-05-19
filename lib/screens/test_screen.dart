@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 // ----------------------- TestScreen -----------------------
 class TestScreen extends StatefulWidget {
@@ -110,26 +110,36 @@ class _TestScreenState extends State<TestScreen> {
         .map((a) => a == 'Yes' ? 1 : 0)
         .toList();
 
-    // Save the test result as a new document in a subcollection
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('tests')
-        .add({
-      'roomSize': roomSize,
-      'answers': vector,
-      'email': user.email ?? '',
-      'displayName': user.displayName ?? '',
-      'timestamp': FieldValue.serverTimestamp(), // Use server timestamp for ordering
-      'status': 'Completed', // Add a status field
-    });
-
-    // Navigate to Best Matches and remove all routes except Home
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      '/best-matches',
-      (route) => route.settings.name == '/home', // Keep Home route
-    );
+    try {
+      // Firebase Realtime Database kullanarak verileri kaydet
+      final databaseRef = FirebaseDatabase.instance.ref();
+      final testData = {
+        'roomSize': roomSize,
+        'answers': vector,
+        'email': user.email ?? '',
+        'displayName': user.displayName ?? '',
+        'timestamp': ServerValue.timestamp,
+        'status': 'Completed',
+      };
+      
+      // Kullanıcının test sonuçlarını kaydet
+      await databaseRef.child('users/${user.uid}/tests').push().set(testData);
+      
+      // Eşleştirme için tüm cevapları ayrı bir yere kaydet
+      await databaseRef.child('user_answers').child(user.uid).set(testData);
+      
+      // Navigate to Best Matches and remove all routes except Home
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/best-matches',
+        (route) => route.settings.name == '/home', // Keep Home route
+      );
+    } catch (error) {
+      print('Firebase kayıt hatası: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Test kaydedilemedi: $error')),
+      );
+    }
   }
 
   @override
@@ -251,23 +261,23 @@ class _TestScreenState extends State<TestScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.blue.shade600
-              : Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(25),
           border: Border.all(
-            color: isSelected
-                ? Colors.blue.shade400
-                : Colors.white.withOpacity(0.3),
-            width: 2,
+            color:
+                isSelected ? Colors.blue.shade800 : Colors.white.withOpacity(0.2),
+            width: isSelected ? 2 : 1,
           ),
         ),
-        child: Text(answerValue,
-            style: TextStyle(
-                color: isSelected ? Colors.white : Colors.white70,
-                fontSize: 16)),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Text(
+          answerValue,
+          style: TextStyle(
+            color: isSelected ? Colors.blue.shade800 : Colors.white,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
       ),
     );
   }

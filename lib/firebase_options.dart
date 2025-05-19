@@ -47,30 +47,33 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAN5Pm0hahu8aVPVkGDnb_5P1aTQLa9Dx4',
-    appId: '1:674428314633:web:4ccc5c6465eae7e6c0c4d8',
-    messagingSenderId: '674428314633',
-    projectId: 'cs310-group-14',
-    authDomain: 'cs310-group-14.firebaseapp.com',
-    storageBucket: 'cs310-group-14.firebasestorage.app',
-    measurementId: 'G-WMEBE6TNKV',
+    apiKey: 'AIzaSyC8UYZGZd0UUEQnRzQU3tLtfNiQHpKLSFY',
+    appId: '1:781071285649:web:f4a7de11ea2a72c6f54c74',
+    messagingSenderId: '781071285649',
+    projectId: 'matchmate-bugraydin',
+    authDomain: 'matchmate-bugraydin.firebaseapp.com',
+    databaseURL: 'https://matchmate-bugraydin-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'matchmate-bugraydin.appspot.com',
+    measurementId: 'G-L1LBW6V2ZP',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBV0o-S8ysbAN5l71WVUOEhOvbCIJVUuNU',
-    appId: '1:674428314633:android:1bd64b6007b1184fc0c4d8',
-    messagingSenderId: '674428314633',
-    projectId: 'cs310-group-14',
-    storageBucket: 'cs310-group-14.firebasestorage.app',
+    apiKey: 'AIzaSyCHI4Nf81O1WJP-qqA_25q0mRXU3loz9NA',
+    appId: '1:781071285649:android:57f43bbf096c2db4f54c74',
+    messagingSenderId: '781071285649',
+    projectId: 'matchmate-bugraydin',
+    databaseURL: 'https://matchmate-bugraydin-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'matchmate-bugraydin.appspot.com',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAN5Pm0hahu8aVPVkGDnb_5P1aTQLa9Dx4',
-    appId: '1:674428314633:web:5624bf76128bd1e0c0c4d8',
-    messagingSenderId: '674428314633',
-    projectId: 'cs310-group-14',
-    authDomain: 'cs310-group-14.firebaseapp.com',
-    storageBucket: 'cs310-group-14.firebasestorage.app',
-    measurementId: 'G-HBKHLQHQW6',
+    apiKey: 'AIzaSyC8UYZGZd0UUEQnRzQU3tLtfNiQHpKLSFY',
+    appId: '1:781071285649:web:f4a7de11ea2a72c6f54c74',
+    messagingSenderId: '781071285649',
+    projectId: 'matchmate-bugraydin',
+    authDomain: 'matchmate-bugraydin.firebaseapp.com',
+    databaseURL: 'https://matchmate-bugraydin-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'matchmate-bugraydin.appspot.com',
+    measurementId: 'G-L1LBW6V2ZP',
   );
 }
