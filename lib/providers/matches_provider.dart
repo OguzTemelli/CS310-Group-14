@@ -38,6 +38,47 @@ class MatchesProvider extends ChangeNotifier {
     notifyListeners();
     
     try {
+      // First, check if we have stored matches in Firestore
+      final QuerySnapshot storedMatches = await _firestore
+          .collection('best_matches')
+          .where('userId', isEqualTo: user.uid)
+          .orderBy('matchScore', descending: true)
+          .get();
+      
+      // If we have stored matches, use those instead of recalculating
+      if (storedMatches.docs.isNotEmpty) {
+        final List<Map<String, dynamic>> tempMatches = [];
+        
+        for (var doc in storedMatches.docs) {
+          final matchData = doc.data() as Map<String, dynamic>;
+          
+          // Get matched user info from Firestore or database
+          final matchedUserId = matchData['matchedUserId'] as String;
+          final matchedUserSnapshot = await _database
+              .ref()
+              .child('user_answers')
+              .child(matchedUserId)
+              .get();
+          
+          if (matchedUserSnapshot.exists) {
+            final userDataMap = Map<String, dynamic>.from(matchedUserSnapshot.value as Map);
+            
+            tempMatches.add({
+              'userId': matchedUserId,
+              'name': userDataMap['displayName'] ?? 'Unnamed',
+              'email': userDataMap['email'] ?? '',
+              'similarity': matchData['matchScore'] as double,
+            });
+          }
+        }
+        
+        _matches = tempMatches;
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+      
+      // If no stored matches, proceed with calculating new matches
       // Get the current user's answers
       final currentUserSnapshot = await _database
           .ref()
@@ -100,6 +141,12 @@ class MatchesProvider extends ChangeNotifier {
               'userId': userId,
               'name': userDataMap['displayName'] ?? 'Unnamed',
               'email': userDataMap['email'] ?? '',
+              'similarity': similarity,
+            });
+            
+            // Store this match in Firestore (for both users)
+            saveMatch({
+              'userId': userId,
               'similarity': similarity,
             });
           }
@@ -171,6 +218,7 @@ class MatchesProvider extends ChangeNotifier {
       
       final String testResultId = testResults.docs.first.id;
       final matchedUser = matchData['userId'];
+      final double similarity = matchData['similarity'];
       
       // Check if there's already a match between these users
       final QuerySnapshot existingMatches = await _firestore
@@ -182,7 +230,7 @@ class MatchesProvider extends ChangeNotifier {
       if (existingMatches.docs.isNotEmpty) {
         // Update existing match
         await _firestore.collection('best_matches').doc(existingMatches.docs.first.id).update({
-          'matchScore': matchData['similarity'],
+          'matchScore': similarity,
           'matchDate': FieldValue.serverTimestamp(),
           'testResultId': testResultId,
         });
@@ -191,7 +239,7 @@ class MatchesProvider extends ChangeNotifier {
         DocumentReference matchRef = await _firestore.collection('best_matches').add({
           'userId': user.uid,
           'matchedUserId': matchedUser,
-          'matchScore': matchData['similarity'],
+          'matchScore': similarity,
           'matchDate': FieldValue.serverTimestamp(),
           'matchType': 'roommate',
           'traitComparisons': {}, // Would need actual trait data
@@ -203,6 +251,38 @@ class MatchesProvider extends ChangeNotifier {
         
         // Update with the document ID
         await matchRef.update({'id': matchRef.id});
+      }
+      
+      // Create or update the reciprocal match (from matched user's perspective)
+      final QuerySnapshot existingReciprocalMatches = await _firestore
+          .collection('best_matches')
+          .where('userId', isEqualTo: matchedUser)
+          .where('matchedUserId', isEqualTo: user.uid)
+          .get();
+          
+      if (existingReciprocalMatches.docs.isNotEmpty) {
+        // Update existing reciprocal match with the same score
+        await _firestore.collection('best_matches').doc(existingReciprocalMatches.docs.first.id).update({
+          'matchScore': similarity, // Use the same similarity score
+          'matchDate': FieldValue.serverTimestamp(),
+        });
+      } else {
+        // Create new reciprocal match record with the same score
+        DocumentReference reciprocalMatchRef = await _firestore.collection('best_matches').add({
+          'userId': matchedUser,
+          'matchedUserId': user.uid,
+          'matchScore': similarity, // Use the same similarity score
+          'matchDate': FieldValue.serverTimestamp(),
+          'matchType': 'roommate',
+          'traitComparisons': {}, // Would need actual trait data
+          'commonAnswers': {}, // Would need actual answer data
+          'commonTraits': [], // Would need actual trait data
+          'testResultId': '', // We don't know the other user's test result ID
+          'previousResultId': '', // No previous result in this context
+        });
+        
+        // Update with the document ID
+        await reciprocalMatchRef.update({'id': reciprocalMatchRef.id});
       }
     } catch (e) {
       _errorMessage = 'Failed to save match: $e';
