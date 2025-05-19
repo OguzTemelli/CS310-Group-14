@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../providers/providers.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,6 +22,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
@@ -95,54 +98,37 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
+                        
+                        // Error message if any
+                        if (authProvider.errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: Text(
+                              authProvider.errorMessage!,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        
                         // Login Button
                         ElevatedButton(
-                          onPressed: () async {
-                            try {
-                              final credential = await FirebaseAuth.instance
-                                  .signInWithEmailAndPassword(
-                                email: _emailController.text.trim(),
-                                password: _passwordController.text.trim(),
-                              );
-                              if (context.mounted) {
-                                Navigator.pushReplacementNamed(
-                                    context, '/home');
-                              }
-                            } on FirebaseAuthException catch (e) {
-                              print("Detailed Firebase Auth Error: ${e.code} - ${e.message}");
-                              
-                              String message = 'Login failed.';
-                              if (e.code == 'user-not-found') {
-                                message = 'No user found for that email.';
-                              } else if (e.code == 'wrong-password') {
-                                message = 'Wrong password provided.';
-                              } else if (e.code == 'invalid-email') {
-                                message = 'Invalid email address.';
-                              } else if (e.code == 'user-disabled') {
-                                message = 'This user account has been disabled.';
-                              } else if (e.code == 'too-many-requests') {
-                                message = 'Too many login attempts. Please try again later.';
-                              } else if (e.code == 'operation-not-allowed') {
-                                message = 'Email/password sign-in is not enabled.';
-                              } else {
-                                message = 'Authentication error: ${e.message}';
-                              }
-                              
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(message)),
-                                );
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text('An error occurred: ' +
-                                          e.toString())),
-                                );
-                              }
-                            }
-                          },
+                          onPressed: authProvider.isLoading
+                              ? null
+                              : () async {
+                                  final success = await authProvider.signIn(
+                                    email: _emailController.text.trim(),
+                                    password: _passwordController.text.trim(),
+                                  );
+                                  
+                                  if (success && context.mounted) {
+                                    // Also load user data using UserProvider
+                                    await Provider.of<UserProvider>(context, listen: false).loadUserData();
+                                    Navigator.pushReplacementNamed(context, '/home');
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.deepOrange,
                             foregroundColor: Colors.white,
@@ -152,13 +138,22 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             minimumSize: const Size(double.infinity, 48),
                           ),
-                          child: const Text(
-                            'Login',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          child: authProvider.isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
                         const SizedBox(height: 16),
                         // Forgot Password and Sign Up Links
