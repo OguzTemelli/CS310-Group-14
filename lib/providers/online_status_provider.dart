@@ -154,7 +154,7 @@ class OnlineStatusProvider extends ChangeNotifier {
           // Check if lastSeen is recent (within 2 minutes)
           if (data['lastSeen'] != null) {
             final lastSeen = data['lastSeen'] as Timestamp;
-            final twoMinutesAgo = DateTime.now().subtract(const Duration(minutes: 2));
+            final twoMinutesAgo = DateTime.now().subtract(const Duration(seconds: 5));
             return lastSeen.toDate().isAfter(twoMinutesAgo);
           }
           return true;
