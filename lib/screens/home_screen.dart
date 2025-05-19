@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
+import 'package:firebase_database/firebase_database.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,11 +14,21 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String userName = 'User';
   String userEmail = 'user@example.com';
+  List<Map<String, dynamic>> onlineUsers = [];
+  StreamSubscription<QuerySnapshot>? _onlineUsersSubscription;
   
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _setupOnlineStatus();
+    _listenToOnlineUsers();
+  }
+  
+  @override
+  void dispose() {
+    _onlineUsersSubscription?.cancel();
+    super.dispose();
   }
   
   @override
@@ -23,6 +36,85 @@ class _HomeScreenState extends State<HomeScreen> {
     super.didChangeDependencies();
     // Reload user data whenever the screen rebuilds
     _loadUserData();
+  }
+
+  // Set current user online status
+  void _setupOnlineStatus() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final databaseRef = FirebaseDatabase.instance.ref().child('status/${user.uid}');
+
+      // Set up onDisconnect to update status when connection is lost
+      databaseRef.onDisconnect().update({'status': 'offline'});
+
+      // Set current status to online
+      databaseRef.update({'status': 'online'});
+
+      // Listen to connection state
+      FirebaseDatabase.instance.ref('.info/connected').onValue.listen((event) {
+        if (event.snapshot.value == false) {
+          return;
+        }
+        
+        // If we're connected, set up the onDisconnect handler
+        databaseRef.onDisconnect().update({'status': 'offline'});
+        databaseRef.update({'status': 'online'});
+      });
+    }
+  }
+  
+  // Listen for online users
+  void _listenToOnlineUsers() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Get timestamp for 2 minutes ago
+      final twoMinutesAgo = DateTime.now().subtract(const Duration(minutes: 2));
+      final timestamp = Timestamp.fromDate(twoMinutesAgo);
+      
+      _onlineUsersSubscription = FirebaseFirestore.instance
+        .collection('user_status')
+        .where('isOnline', isEqualTo: true)
+        // Consider users who have been seen in the last 2 minutes
+        .snapshots()
+        .listen((snapshot) {
+          final List<Map<String, dynamic>> users = [];
+          for (var doc in snapshot.docs) {
+            // Skip current user
+            if (doc.id != user.uid) {
+              final data = doc.data();
+              
+              // Additional check for recent activity
+              bool isRecentlyActive = true;
+              if (data['lastSeen'] != null) {
+                final lastSeen = data['lastSeen'] as Timestamp;
+                // Only consider the user online if they were seen in the last 2 minutes
+                isRecentlyActive = lastSeen.compareTo(timestamp) >= 0;
+              }
+              
+              if (isRecentlyActive) {
+                users.add({
+                  'uid': doc.id,
+                  'displayName': data['displayName'] ?? 'Unknown User',
+                  'email': data['email'] ?? '',
+                  'lastSeen': data['lastSeen'],
+                });
+              }
+            }
+          }
+          
+          setState(() {
+            onlineUsers = users;
+            print('Online users updated: ${users.length}');
+          });
+        }, onError: (error) {
+          print('Error listening to online users: $error');
+        });
+    }
+  }
+  
+  String _getShortName(String fullName) {
+    if (fullName.length <= 8) return fullName;
+    return '${fullName.substring(0, 7)}...';
   }
   
   void _loadUserData() {
@@ -162,7 +254,108 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
+              
+              // Add Online Users Bar
+              if (onlineUsers.isNotEmpty) ...[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.people, color: Colors.white.withOpacity(0.7), size: 16),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Online Users',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${onlineUsers.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 60,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: onlineUsers.length,
+                        itemBuilder: (context, index) {
+                          final user = onlineUsers[index];
+                          final displayName = user['displayName']?.toString() ?? 'User';
+                          final firstLetter = displayName.isNotEmpty ? displayName.substring(0, 1).toUpperCase() : 'U';
+                          
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: Column(
+                              children: [
+                                Stack(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.white.withOpacity(0.2),
+                                      child: Text(
+                                        firstLetter,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      right: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                          color: Colors.green,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: const Color(0xFF1a237e),
+                                            width: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _getShortName(displayName),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+              
               // Menu Grid
               Expanded(
                 child: GridView.count(
@@ -229,6 +422,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    // Update status to offline before signing out
+                    _setupOnlineStatusOffline();
+                    
                     // Sign out the user
                     FirebaseAuth.instance.signOut();
                     Navigator.pushNamedAndRemoveUntil(
@@ -265,6 +461,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+  
+  // Set user status to offline when logging out
+  void _setupOnlineStatusOffline() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      FirebaseFirestore.instance.collection('user_status').doc(user.uid).set({
+        'isOnline': false,
+        'lastSeen': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
   }
 
   Widget _buildMenuButton({
