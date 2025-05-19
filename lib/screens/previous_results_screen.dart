@@ -70,6 +70,68 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
     }
   }
 
+  // Add delete functionality
+  Future<void> _deleteTestResult(String testId) async {
+    try {
+      // Show confirmation dialog
+      final shouldDelete = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Delete Test Result'),
+          content: const Text('Are you sure you want to delete this test result? This action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
+      
+      if (shouldDelete != true) return;
+      
+      // Delete from Firebase
+      await _database.child('users/${_user!.uid}/tests/$testId').remove();
+      
+      // Also check if this is the last test result in user_answers and delete if needed
+      final userAnswersSnapshot = await _database.child('user_answers/${_user!.uid}').get();
+      
+      if (userAnswersSnapshot.exists) {
+        final userAnswersData = Map<String, dynamic>.from(userAnswersSnapshot.value as Map);
+        
+        // If this data has the same timestamp as the one we're deleting,
+        // we should delete it from user_answers as well
+        final deletedTest = _testResults.firstWhere((test) => test['id'] == testId);
+        final deletedTimestamp = deletedTest['timestamp'] as int;
+        
+        if (userAnswersData.containsKey('timestamp') && 
+            userAnswersData['timestamp'] == deletedTimestamp) {
+          await _database.child('user_answers/${_user!.uid}').remove();
+        }
+      }
+      
+      // Reload the list
+      _loadTestResults();
+      
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Test result deleted successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_user == null) {
@@ -105,6 +167,7 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                         final timestamp = test['timestamp'] as int;
                         final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
                         final formattedDate = '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}';
+                        final testId = test['id'] as String;
                         
                         final answers = List<int>.from(test['answers'] as List);
                         final roomSize = test['roomSize'] as int;
@@ -126,12 +189,21 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                                         fontSize: 18,
                                       ),
                                     ),
-                                    Text(
-                                      formattedDate,
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                      ),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          formattedDate,
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                          onPressed: () => _deleteTestResult(testId),
+                                          tooltip: 'Delete this result',
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -160,18 +232,21 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 const SizedBox(height: 16),
-                                Container(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue.shade800,
-                                      foregroundColor: Colors.white,
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue.shade800,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        onPressed: () {
+                                          Navigator.pushNamed(context, '/best-matches');
+                                        },
+                                        child: const Text('View Matches'),
+                                      ),
                                     ),
-                                    onPressed: () {
-                                      Navigator.pushNamed(context, '/best-matches');
-                                    },
-                                    child: const Text('View Matches'),
-                                  ),
+                                  ],
                                 ),
                               ],
                             ),
