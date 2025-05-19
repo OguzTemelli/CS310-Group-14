@@ -31,6 +31,9 @@ Particularly those living in dorms or shared housing who want to ensure they are
 # User Interface:
   Engaging UI screens for registration, test submission, and displaying match results.
 
+# Email Notifications:
+  Automatic email confirmations for premium membership purchases and feedback submissions using Firebase Cloud Functions and Brevo (SendInBlue).
+
 
 # Platform:
   This app is developed via Flutter.
@@ -49,3 +52,20 @@ Particularly those living in dorms or shared housing who want to ensure they are
   -Optimizing performance, especially as the dataset grows.
   -Protecting sensitive user information with robust authentication and secure storage practices.
   -Maintaining performance and data integrity as the number of users increases.
+
+## Firebase Features
+
+DormMate uses several Firebase services:
+
+- **Firestore Database**: Stores user profiles, test results, and matches
+- **Authentication**: Secure user registration and login
+- **Cloud Functions**: Handles email notifications for purchases and feedback
+- **Hosting**: Deploys web version of the application
+
+## Email Integration
+
+The app includes automated email functionality for:
+- Membership purchase confirmations
+- Feedback submission acknowledgments
+
+See [functions/README.md](functions/README.md) for details on email integration.

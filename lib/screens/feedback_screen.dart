@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
@@ -108,11 +110,34 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     ),
                   ),
                   onPressed: () {
-                    // TODO: Implement sending feedback
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Feedback sent!')),
-                    );
-                    Navigator.pop(context);
+                    // Kullanıcının giriş yapmış olup olmadığını kontrol et
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user != null && _feedbackController.text.isNotEmpty) {
+                      // Firestore'a geri bildirimi ekle
+                      FirebaseFirestore.instance.collection('user_feedback').add({
+                        'userId': user.uid,
+                        'userEmail': user.email ?? 'unknown@email.com',
+                        'feedbackText': _feedbackController.text,
+                        'timestamp': FieldValue.serverTimestamp(),
+                      }).then((_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Feedback sent!')),
+                        );
+                        Navigator.pop(context);
+                      }).catchError((error) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: $error')),
+                        );
+                      });
+                    } else if (_feedbackController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please write your feedback first')),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('You need to be logged in')),
+                      );
+                    }
                   },
                   child: const Text(
                     'SEND',

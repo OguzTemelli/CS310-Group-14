@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UpgradeMembershipScreen extends StatelessWidget {
   const UpgradeMembershipScreen({super.key});
@@ -51,11 +53,29 @@ class UpgradeMembershipScreen extends StatelessWidget {
               icon: Icons.star_border,
               price: '\$9.99',
               onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/payment-success',
-                  arguments: 'Premium',
-                );
+                final user = FirebaseAuth.instance.currentUser;
+                if (user != null) {
+                  FirebaseFirestore.instance.collection('user_purchases').add({
+                    'userId': user.uid,
+                    'userEmail': user.email ?? 'unknown@email.com',
+                    'membershipType': 'Premium',
+                    'purchaseTimestamp': FieldValue.serverTimestamp(),
+                  }).then((_) {
+                    Navigator.pushNamed(
+                      context,
+                      '/payment-success',
+                      arguments: 'Premium',
+                    );
+                  }).catchError((error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $error')),
+                    );
+                  });
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('You need to be logged in')),
+                  );
+                }
               },
             ),
             const SizedBox(height: 20),
@@ -66,11 +86,29 @@ class UpgradeMembershipScreen extends StatelessWidget {
               icon: Icons.workspace_premium,
               price: '\$19.99',
               onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/payment-success',
-                  arguments: 'Pro',
-                );
+                final user = FirebaseAuth.instance.currentUser;
+                if (user != null) {
+                  FirebaseFirestore.instance.collection('user_purchases').add({
+                    'userId': user.uid,
+                    'userEmail': user.email ?? 'unknown@email.com',
+                    'membershipType': 'Pro',
+                    'purchaseTimestamp': FieldValue.serverTimestamp(),
+                  }).then((_) {
+                    Navigator.pushNamed(
+                      context,
+                      '/payment-success',
+                      arguments: 'Pro',
+                    );
+                  }).catchError((error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $error')),
+                    );
+                  });
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('You need to be logged in')),
+                  );
+                }
               },
             ),
           ],

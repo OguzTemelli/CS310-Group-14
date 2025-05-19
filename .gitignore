@@ -46,3 +46,15 @@ app.*.map.json
 
 # Firebase auto-generated options
 # lib/firebase_options.dart
+
+# Firebase Functions related
+functions/node_modules/
+functions/.env
+functions/.env.*
+functions/.runtimeconfig.json
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+pubspec.lock
+**/generated_plugin_registrant.dart
