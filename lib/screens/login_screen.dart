@@ -109,6 +109,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     context, '/home');
                               }
                             } on FirebaseAuthException catch (e) {
+                              print("Detailed Firebase Auth Error: ${e.code} - ${e.message}");
+                              
                               String message = 'Login failed.';
                               if (e.code == 'user-not-found') {
                                 message = 'No user found for that email.';
@@ -116,7 +118,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                 message = 'Wrong password provided.';
                               } else if (e.code == 'invalid-email') {
                                 message = 'Invalid email address.';
+                              } else if (e.code == 'user-disabled') {
+                                message = 'This user account has been disabled.';
+                              } else if (e.code == 'too-many-requests') {
+                                message = 'Too many login attempts. Please try again later.';
+                              } else if (e.code == 'operation-not-allowed') {
+                                message = 'Email/password sign-in is not enabled.';
+                              } else {
+                                message = 'Authentication error: ${e.message}';
                               }
+                              
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text(message)),

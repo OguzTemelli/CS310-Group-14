@@ -18,44 +18,44 @@ class _TestScreenState extends State<TestScreen> {
   final List<Map<String, dynamic>> questions = [
     {
       'en': 'How many people do you want in your room?',
-      'tr': 'Kaç kişilik odada kalmak istiyorsun?',
+      'tr': 'How many people do you want in your room?',
       'options': ['2', '4'],
       'optionsTr': ['2', '4'],
       'type': 'choice',
     },
     {
       'en': 'Do you sleep late?',
-      'tr': 'Geç mi uyursun?',
+      'tr': 'Do you sleep late?',
       'options': ['Yes', 'No'],
-      'optionsTr': ['Evet', 'Hayır'],
+      'optionsTr': ['Yes', 'No'],
       'type': 'binary',
     },
     {
       'en': 'Do you prefer studying in silence?',
-      'tr': 'Sessizlikte çalışmayı mı tercih edersin?',
+      'tr': 'Do you prefer studying in silence?',
       'options': ['Yes', 'No'],
-      'optionsTr': ['Evet', 'Hayır'],
+      'optionsTr': ['Yes', 'No'],
       'type': 'binary',
     },
     {
       'en': 'Are you a social person?',
-      'tr': 'Sosyal bir insan mısın?',
+      'tr': 'Are you a social person?',
       'options': ['Yes', 'No'],
-      'optionsTr': ['Evet', 'Hayır'],
+      'optionsTr': ['Yes', 'No'],
       'type': 'binary',
     },
     {
       'en': 'Do you like listening to music while studying?',
-      'tr': 'Ders çalışırken müzik dinlemeyi sever misin?',
+      'tr': 'Do you like listening to music while studying?',
       'options': ['Yes', 'No'],
-      'optionsTr': ['Evet', 'Hayır'],
+      'optionsTr': ['Yes', 'No'],
       'type': 'binary',
     },
     {
       'en': 'Do you keep your room clean and organized?',
-      'tr': 'Odanı temiz ve düzenli tutar mısın?',
+      'tr': 'Do you keep your room clean and organized?',
       'options': ['Yes', 'No'],
-      'optionsTr': ['Evet', 'Hayır'],
+      'optionsTr': ['Yes', 'No'],
       'type': 'binary',
     },
   ];
@@ -111,7 +111,7 @@ class _TestScreenState extends State<TestScreen> {
         .toList();
 
     try {
-      // Firebase Realtime Database kullanarak verileri kaydet
+      // Save data using Firebase Realtime Database
       final databaseRef = FirebaseDatabase.instance.ref();
       final testData = {
         'roomSize': roomSize,
@@ -122,10 +122,10 @@ class _TestScreenState extends State<TestScreen> {
         'status': 'Completed',
       };
       
-      // Kullanıcının test sonuçlarını kaydet
+      // Save the user's test results
       await databaseRef.child('users/${user.uid}/tests').push().set(testData);
       
-      // Eşleştirme için tüm cevapları ayrı bir yere kaydet
+      // Save all answers separately for matching
       await databaseRef.child('user_answers').child(user.uid).set(testData);
       
       // Navigate to Best Matches and remove all routes except Home
@@ -135,9 +135,9 @@ class _TestScreenState extends State<TestScreen> {
         (route) => route.settings.name == '/home', // Keep Home route
       );
     } catch (error) {
-      print('Firebase kayıt hatası: $error');
+      print('Firebase save error: $error');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Test kaydedilemedi: $error')),
+        SnackBar(content: Text('Failed to save test: $error')),
       );
     }
   }

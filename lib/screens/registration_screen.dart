@@ -374,27 +374,28 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           }
                         } catch (e) {
                           // Handle specific Firebase Auth errors
-                          String errorMessage = 'An error occurred during registration';
-                          
                           if (e is FirebaseAuthException) {
-                            switch (e.code) {
-                              case 'email-already-in-use':
-                                errorMessage = 'This email is already registered';
-                                break;
-                              case 'weak-password':
-                                errorMessage = 'Password is too weak';
-                                break;
-                              default:
-                                errorMessage = 'Authentication error: ${e.message}';
+                            print("Detailed Firebase Auth Error: ${e.code} - ${e.message}");
+                            // Show more specific message to the user
+                            String errorMessage = "Registration failed";
+                            if (e.code == 'weak-password') {
+                              errorMessage = "Password is too weak, it must be at least 6 characters";
+                            } else if (e.code == 'email-already-in-use') {
+                              errorMessage = "This email address is already in use";
+                            } else if (e.code == 'invalid-email') {
+                              errorMessage = "Invalid email format";
+                            } else if (e.code == 'operation-not-allowed') {
+                              errorMessage = "Email/password accounts are not enabled";
+                            } else {
+                              errorMessage = "Error: ${e.message}";
                             }
-                          }
-                          
-                          // Close loading dialog
-                          if (context.mounted) {
-                            Navigator.of(context).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(errorMessage)),
-                            );
+                            
+                            if (context.mounted) {
+                              Navigator.of(context).pop(); // Close loading dialog
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(errorMessage)),
+                              );
+                            }
                           }
                         }
                       } else if (!_agreeToTerms) {

@@ -28,7 +28,7 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
     if (_user == null) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Lütfen önce giriş yapın';
+        _errorMessage = 'Please login first';
       });
       return;
     }
@@ -45,7 +45,7 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
           tests.add(test);
         });
         
-        // Tarihe göre sırala (en yeniden en eskiye)
+        // Sort by date (newest to oldest)
         tests.sort((a, b) {
           final aTimestamp = a['timestamp'] as int;
           final bTimestamp = b['timestamp'] as int;
@@ -59,13 +59,13 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
       } else {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Henüz test sonucunuz bulunmamaktadır.';
+          _errorMessage = 'NO TEST RESULTS';
         });
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Veriler yüklenirken bir hata oluştu: $e';
+        _errorMessage = 'ERROR WHILE LOADING DATA: $e';
       });
     }
   }
@@ -75,19 +75,19 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
     if (_user == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Önceki Sonuçlar'),
+          title: const Text('Previous Results'),
           backgroundColor: Colors.blue.shade800,
           foregroundColor: Colors.white,
         ),
         body: const Center(
-          child: Text('Sonuçlarınızı görmek için lütfen giriş yapın'),
+          child: Text('Please login to see your results'),
         ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Önceki Sonuçlar'),
+        title: const Text('PREVIOUS RESULTS'),
         backgroundColor: Colors.blue.shade800,
         foregroundColor: Colors.white,
       ),
@@ -96,7 +96,7 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
           : _errorMessage.isNotEmpty
               ? Center(child: Text(_errorMessage))
               : _testResults.isEmpty
-                  ? const Center(child: Text('Henüz test sonucunuz bulunmamaktadır.'))
+                  ? const Center(child: Text('NO RESULTS YET'))
                   : ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: _testResults.length,
@@ -120,7 +120,7 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      'Test Sonucu #${index + 1}',
+                                      'Test Result #${index + 1}',
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 18,
@@ -136,27 +136,27 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                Text('Oda Tercihi: $roomSize kişilik',
+                                Text('Room Preference: $roomSize person',
                                     style: const TextStyle(fontSize: 16)),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Geç Uyuma: ${answers[0] == 1 ? 'Evet' : 'Hayır'}',
+                                  'Sleep Late: ${answers[0] == 1 ? 'Yes' : 'No'}',
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(
-                                  'Sessizlikte Çalışma: ${answers[1] == 1 ? 'Evet' : 'Hayır'}',
+                                  'Study in Silence: ${answers[1] == 1 ? 'Yes' : 'No'}',
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(
-                                  'Sosyal Olma: ${answers[2] == 1 ? 'Evet' : 'Hayır'}',
+                                  'Social Person: ${answers[2] == 1 ? 'Yes' : 'No'}',
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(
-                                  'Müzikle Çalışma: ${answers[3] == 1 ? 'Evet' : 'Hayır'}',
+                                  'Study with Music: ${answers[3] == 1 ? 'Yes' : 'No'}',
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(
-                                  'Temiz ve Düzenli: ${answers[4] == 1 ? 'Evet' : 'Hayır'}',
+                                  'Clean and Organized: ${answers[4] == 1 ? 'Yes' : 'No'}',
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 const SizedBox(height: 16),
@@ -170,7 +170,7 @@ class _PreviousResultsScreenState extends State<PreviousResultsScreen> {
                                     onPressed: () {
                                       Navigator.pushNamed(context, '/best-matches');
                                     },
-                                    child: const Text('Eşleşmeleri Gör'),
+                                    child: const Text('View Matches'),
                                   ),
                                 ),
                               ],

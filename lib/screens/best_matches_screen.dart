@@ -29,13 +29,13 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
     if (user == null) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Lütfen önce giriş yapın';
+        _errorMessage = 'Please login first';
       });
       return;
     }
 
     try {
-      // Kullanıcının kendi cevaplarını al
+      // Get the current user's answers
       final currentUserSnapshot = await FirebaseDatabase.instance
           .ref()
           .child('user_answers')
@@ -45,7 +45,7 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
       if (!currentUserSnapshot.exists) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Henüz test sonucunuz bulunmamaktadır';
+          _errorMessage = 'NO TEST RESULTS';
         });
         return;
       }
@@ -54,7 +54,7 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
       final int currentRoomSize = currentUserData['roomSize'] as int;
       final List<int> vectorA = List<int>.from(currentUserData['answers'] as List);
       
-      // Tüm kullanıcıların cevaplarını al
+      // Get all users' answers
       final allAnswersSnapshot = await FirebaseDatabase.instance
           .ref()
           .child('user_answers')
@@ -63,7 +63,7 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
       if (!allAnswersSnapshot.exists) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Henüz eşleşme için veri bulunmamaktadır';
+          _errorMessage = 'NO DATA TO MATCH';
         });
         return;
       }
@@ -72,16 +72,16 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
       final List<Map<String, dynamic>> tempMatches = [];
       
       allAnswersData.forEach((userId, userData) {
-        // Kendimizi hariç tut
+        // Skip ourselves
         if (userId != user.uid) {
           final userDataMap = Map<String, dynamic>.from(userData as Map);
           final int userRoomSize = userDataMap['roomSize'] as int;
           
-          // Sadece aynı oda boyutunu tercih edenlerle eşleş
+          // Only match with those who prefer the same room size
           if (userRoomSize == currentRoomSize) {
             final List<int> vectorB = List<int>.from(userDataMap['answers'] as List);
             
-            // Benzerlik skorunu hesapla
+            // Calculate similarity score
             double weightedMatches = 0;
             final totalWeight = questionWeights.reduce((a, b) => a + b);
             
@@ -95,7 +95,7 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
             
             tempMatches.add({
               'userId': userId,
-              'name': userDataMap['displayName'] ?? 'İsimsiz',
+              'name': userDataMap['displayName'] ?? 'Unnamed',
               'email': userDataMap['email'] ?? '',
               'similarity': similarity,
             });
@@ -103,7 +103,7 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
         }
       });
       
-      // Benzerlik skoruna göre sırala (en yüksekten en düşüğe)
+      // Sort by similarity score (highest to lowest)
       tempMatches.sort((a, b) => b['similarity'].compareTo(a['similarity']));
       
       setState(() {
@@ -113,7 +113,7 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Eşleşmeler yüklenirken bir hata oluştu: $e';
+        _errorMessage = 'An error occurred while loading matches: $e';
       });
     }
   }
@@ -122,7 +122,7 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('En İyi Eşleşmeler'),
+        title: const Text('Best Matches'),
         backgroundColor: Colors.blue.shade800,
         foregroundColor: Colors.white,
       ),
@@ -131,7 +131,7 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
           : _errorMessage.isNotEmpty
               ? Center(child: Text(_errorMessage))
               : _matches.isEmpty
-                  ? const Center(child: Text('Herhangi bir eşleşme bulunamadı'))
+                  ? const Center(child: Text('No matches found'))
                   : ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: _matches.length,
@@ -191,7 +191,7 @@ class _BestMatchesScreenState extends State<BestMatchesScreen> {
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Text(
-                                        '$percentage% Uyum',
+                                        '$percentage% Match',
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,

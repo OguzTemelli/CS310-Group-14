@@ -6,13 +6,13 @@ class TestConfirmationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1a237e), // Koyu mavi arka plan
+      backgroundColor: const Color(0xFF1a237e), // Dark blue background
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              // Logo ve başlık
+              // Logo and title
               const Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -29,7 +29,7 @@ class TestConfirmationScreen extends StatelessWidget {
                 ],
               ),
 
-              // Ana içerik
+              // Main content
               Expanded(
                 child: Center(
                   child: Column(
@@ -46,7 +46,7 @@ class TestConfirmationScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 40),
-                      // Yes butonu
+                      // Yes button
                       Container(
                         width: 200,
                         margin: const EdgeInsets.symmetric(vertical: 10),
@@ -79,7 +79,7 @@ class TestConfirmationScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // No butonu
+                      // No button
                       Container(
                         width: 200,
                         margin: const EdgeInsets.symmetric(vertical: 10),

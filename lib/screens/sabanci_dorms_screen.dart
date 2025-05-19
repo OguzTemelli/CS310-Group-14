@@ -11,19 +11,19 @@ class _SabanciDormsScreenState extends State<SabanciDormsScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  // Tüm fotoğrafları ve açıklamalarını içeren liste
+  // List containing all photos and their descriptions
   final List<Map<String, String>> _imageData = [
     {
       'image': 'https://images.unsplash.com/photo-1460317442991-0ec209397118?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8c3R1ZWRlbnQlMjBob3VzaW5nfGVufDB8fDB8fA%3D%3D',
-      'description': 'Sabancı Üniversitesi Yurt Binası Dış Görünüm'
+      'description': 'Sabanci University Dormitory Exterior View'
     },
     {
       'image': 'assets/images/sabanciyurt2.jpg',
-      'description': 'Yurt Binası Yan Cephe'
+      'description': 'Dormitory Building Side View'
     },
     {
       'image': 'assets/images/yurt-odasi.jpg',
-      'description': 'Örnek Yurt Odası'
+      'description': 'Sample Dorm Room'
     },
   ];
 
@@ -37,7 +37,7 @@ class _SabanciDormsScreenState extends State<SabanciDormsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sabancı Yurtları'),
+        title: const Text('Sabanci Dormitories'),
         backgroundColor: Colors.blue[900],
       ),
       body: ListView(
@@ -139,7 +139,7 @@ class _SabanciDormsScreenState extends State<SabanciDormsScreen> {
             child: Column(
               children: [
                 Text(
-                  'Sabancı Üniversitesi Yurtları',
+                  'Sabanci University Dormitories',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -159,8 +159,8 @@ class _SabanciDormsScreenState extends State<SabanciDormsScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
-              'Sabancı Üniversitesi yurtları, öğrencilere modern ve konforlu bir yaşam alanı sunmaktadır. '
-              'Tüm odalarda temel mobilyalar, internet bağlantısı ve gerekli altyapı mevcuttur.',
+              'Sabanci University dormitories offer students a modern and comfortable living space. '
+              'All rooms have basic furniture, internet connection, and the necessary infrastructure.',
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),

@@ -47,9 +47,9 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyC8UYZGZd0UUEQnRzQU3tLtfNiQHpKLSFY',
-    appId: '1:781071285649:web:f4a7de11ea2a72c6f54c74',
-    messagingSenderId: '781071285649',
+    apiKey: 'AIzaSyAVQnjzFBAhk9hDeAULA82oHjG0C-4mB54',
+    appId: '1:218660343420:web:f4a7de11ea2a72c6f54c74',
+    messagingSenderId: '218660343420',
     projectId: 'matchmate-bugraydin',
     authDomain: 'matchmate-bugraydin.firebaseapp.com',
     databaseURL: 'https://matchmate-bugraydin-default-rtdb.europe-west1.firebasedatabase.app',
@@ -58,18 +58,18 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCHI4Nf81O1WJP-qqA_25q0mRXU3loz9NA',
-    appId: '1:781071285649:android:57f43bbf096c2db4f54c74',
-    messagingSenderId: '781071285649',
+    apiKey: 'AIzaSyAVQnjzFBAhk9hDeAULA82oHjG0C-4mB54',
+    appId: '1:218660343420:android:57f43bbf096c2db4f54c74',
+    messagingSenderId: '218660343420',
     projectId: 'matchmate-bugraydin',
     databaseURL: 'https://matchmate-bugraydin-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'matchmate-bugraydin.appspot.com',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyC8UYZGZd0UUEQnRzQU3tLtfNiQHpKLSFY',
-    appId: '1:781071285649:web:f4a7de11ea2a72c6f54c74',
-    messagingSenderId: '781071285649',
+    apiKey: 'AIzaSyAVQnjzFBAhk9hDeAULA82oHjG0C-4mB54',
+    appId: '1:218660343420:web:f4a7de11ea2a72c6f54c74',
+    messagingSenderId: '218660343420',
     projectId: 'matchmate-bugraydin',
     authDomain: 'matchmate-bugraydin.firebaseapp.com',
     databaseURL: 'https://matchmate-bugraydin-default-rtdb.europe-west1.firebasedatabase.app',

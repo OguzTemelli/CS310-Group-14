@@ -97,7 +97,7 @@ class ContactScreen extends StatelessWidget {
                                 Icon(Icons.location_on, color: Colors.white, size: 48),
                                 SizedBox(height: 16),
                                 Text(
-                                  'Sabancı Üniversitesi\nOrta Mahalle, 34956\nTuzla/İstanbul',
+                                  'Sabanci University\nOrta Mahalle, 34956\nTuzla/Istanbul',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(color: Colors.white, fontSize: 16),
                                 ),

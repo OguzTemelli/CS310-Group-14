@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              // Profil Kartı
+              // Profile Card
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.all(20.0),
                   child: Row(
                     children: [
-                      // Profil Resmi
+                      // Profile Picture
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 15),
-                      // Kullanıcı Bilgileri
+                      // User Information
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              // Menü Grid'i
+              // Menu Grid
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
