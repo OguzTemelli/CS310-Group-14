@@ -14,6 +14,13 @@ class PaymentSuccessScreen extends StatelessWidget {
         'Unlimited test attempts',
         'Detailed compatibility reports',
       ];
+    } else if (type == 'Custom Plan') {
+      return [
+        'Your custom selected features',
+        'Personalized experience',
+        'Pay only for what you need',
+        'Upgrade anytime to Premium or Pro',
+      ];
     } else {
       return [
         'All Premium features',

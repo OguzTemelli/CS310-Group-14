@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MembershipFeature {
   final String name;
@@ -159,11 +161,35 @@ class _MembershipFeaturesScreenState extends State<MembershipFeaturesScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/payment-success',
-                          arguments: 'Custom Plan',
-                        );
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user != null) {
+                          // Create a list of feature names to track what was purchased
+                          final List<String> purchasedFeatures = _cartFeatures.map((f) => f.name).toList();
+                          
+                          // Save purchase to Firestore
+                          FirebaseFirestore.instance.collection('user_purchases').add({
+                            'userId': user.uid,
+                            'userEmail': user.email ?? 'unknown@email.com',
+                            'membershipType': 'Custom Plan',
+                            'purchaseTimestamp': FieldValue.serverTimestamp(),
+                            'features': purchasedFeatures,
+                            'totalPrice': _totalPrice,
+                          }).then((_) {
+                            Navigator.pushNamed(
+                              context,
+                              '/payment-success',
+                              arguments: 'Custom Plan',
+                            );
+                          }).catchError((error) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $error')),
+                            );
+                          });
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('You need to be logged in')),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
